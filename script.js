@@ -84,7 +84,8 @@ if (registrazioneForm) {
         const nomeSocieta = document.getElementById('nomeSocieta').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        await signUp(email, password, nomeSocieta);
+        const cfs = document.getElementById('cfs').value; 
+        await signUp(email, password, nomeSocieta,cfs);
     });
 }
 
