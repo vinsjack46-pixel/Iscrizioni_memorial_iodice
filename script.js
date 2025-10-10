@@ -4,12 +4,12 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Funzioni di Autenticazione
-async function signUp(email, password, nomeSocieta, codicefiscalesocita) {
+async function signUp(email, password, nomeSocieta, cfs) {
     try {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
 
-        const { error: societaError } = await supabase.from('societa').insert([{ nome: nomeSocieta, email: email, cfs: codicefiscalesocieta, user_id: data.user.id }]);
+        const { error: societaError } = await supabase.from('societa').insert([{ nome: nomeSocieta, email: email, cfs: cfs, user_id: data.user.id }]);
         if (societaError) throw societaError;
 
         alert('Registrazione avvenuta!');
