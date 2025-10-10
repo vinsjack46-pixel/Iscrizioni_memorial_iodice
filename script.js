@@ -1,6 +1,6 @@
 const { createClient } = window.supabase;
-const supabaseUrl = 'https://eklacptdzxruaquxiffv.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbGFjcHRkenhydWFxdXhpZmZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE0NDg4MTIsImV4cCI6MjA1NzAyNDgxMn0.LdW7ypdZvtkcgsJT-fHgiBjziyPYO0iHrTk8ZgkJXQk';
+const supabaseUrl = 'https://grfslnoczwwtpdzgodog.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyZnNsbm9jend3dHBkemdvZG9nIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTQ5NTA0MiwiZXhwIjoyMDc1MDcxMDQyfQ.DbN-0V1itbz51afMxCtcGTnGyZ2oiOTJbn_zIT-mJYY';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Funzioni di Autenticazione
