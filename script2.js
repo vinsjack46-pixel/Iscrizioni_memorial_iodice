@@ -459,22 +459,18 @@ specialtySelect.innerHTML += `
              } else if (birthYear >= 2020 && birthYear <= 2021) {
                   classe = "Bambini_U6";
                   classeSelect.innerHTML = `<option value="Bambini_U6">Bambini_U6</option>`;
-             } else if (birthYear >= 2005 && birthYear <= 2007) {
-                  classe = "U21";
-                  classeSelect.innerHTML = `<option value="U2">U21</option>`;
-
              } else if (birthYear >= 1990 && birthYear <= 2007) {
                    classe = "Seniores";
                    classeSelect.innerHTML = `<option value="Seniores">Seniores</option>`;
          } else if (birthYear >= 2022) {
              classe = "ERROR";
              classeSelect.innerHTML = `<option value="ERROR">ERROR</option>`;
-         } else if (birthYear <=1950) {
+         } else if (birthYear <=1959) {
              classe = "ERROR";
              classeSelect.innerHTML = `<option value="ERROR">ERROR</option>`;
          } else {
-             classe = "Assoluti";
-             classeSelect.innerHTML = `<option value="Assoluti">Assoluti</option>`;
+             classe = "Master";
+             classeSelect.innerHTML = `<option value="Master">Master</option>`;
          }
 
          toggleWeightCategory();
