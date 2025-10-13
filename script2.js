@@ -16,7 +16,7 @@ function getMaxAthletesForSpecialty(specialty) {
         return 50;
     } 
     // Limite unificato per le specialità Percorso
-    else if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
+    else if (specialty === "percorso-Palloncino" || specialty === "Percorso-Kata") {
         return 600; 
     } else {
         return Infinity;
