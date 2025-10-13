@@ -167,4 +167,4 @@ async function fetchSocietyNameOnLoad() {
     }
 }
 
-fetchSocietyNameOnLoad(); questo è lo script
+fetchSocietyNameOnLoad(); 
