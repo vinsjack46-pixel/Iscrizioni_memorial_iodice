@@ -510,7 +510,6 @@ specialtySelect.innerHTML += `
          }else if (classe === "Esordienti" || classe === "Cadetti") {
              // Se la classe è Juniores, aggiungi le opzioni di cintura specifiche
              beltSelect.innerHTML += `
- <option value="Bianca">Bianca</option>
                 <option value="Gialla">Gialla</option>
                  <option value="Arancio-Verde">Arancio-Verde</option>
                  <option value="Blu-Marrone">Blu-Marrone</option>
@@ -521,8 +520,7 @@ specialtySelect.innerHTML += `
         `;
    }else if (classe === "Bambini") {
              beltSelect.innerHTML += `
-        <option value="Bianca">Bianca</option>
-                <option value="Tutte le cinture"> Tutte le cinture </option >
+                        <option value="Tutte le cinture"> Tutte le cinture </option >
              `;
      }else {
              // Altrimenti, aggiungi le opzioni di cintura standard
