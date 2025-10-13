@@ -426,8 +426,7 @@ specialtySelect.innerHTML += `
      }else {
              // Altrimenti, aggiungi le opzioni di cintura standard
              beltSelect.innerHTML += `
-                 <option value="Arancio-Verde">Arancio-Verde</option>
-                 <option value="Blu-Marrone-Nere">Blu-Marrone-Nera</option>
+                <option value="Tutte le cinture"> Tutte le cinture </option >
              `;
          }
      }
