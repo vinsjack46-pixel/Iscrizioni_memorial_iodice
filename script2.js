@@ -370,14 +370,19 @@ const birthYear = new Date(birthdateInput.value).getFullYear();
 specialtySelect.innerHTML = "";
 
 // Aggiungi le opzioni in base all'anno di nascita
-if (birthYear >= 2016 && birthYear <= 2020) {
+if (birthYear >= 2018 && birthYear <= 2021) {
 specialtySelect.innerHTML += `
 <option value="Percorso-Kata">Percorso-Kata</option>
-<option value="percorso-Palloncino">Percorso-Palloncino</option>`;
-} else if (birthYear <= 2015) {
+<option value="percorso-Palloncino">Percorso-Palloncino</option>
+<option value="ParaKarate">ParaKarate</option>`;
+} else if (birthYear <= 2017) {
 specialtySelect.innerHTML += `
 <option value="Kata">Kata</option>
-<option value="Kumite">Kumite</option>`;
+<option value="Kumite">Kumite</option>
+<option value="ParaKarate">ParaKarate</option>`;
+    } else if (birthYear >= 1959 && birthYear <= 2007) {
+specialtySelect.innerHTML += `
+<option value="ParaKarate">ParaKarate</option>`;
 } else {
 specialtySelect.innerHTML += `
    <option value="ERROR">ERROR</option>`;
@@ -403,10 +408,10 @@ specialtySelect.innerHTML += `
              beltSelect.innerHTML += `
            <option value="Marrone-Nera">Marrone-Nera</option>
         `;
-         }else if (classe === "Esordienti") {
+         }else if (classe === "Esordienti" || classe === "Cadetti") {
              // Se la classe è Juniores, aggiungi le opzioni di cintura specifiche
              beltSelect.innerHTML += `
-<option value="Gialla">Gialla</option>
+                 <option value="Gialla">Gialla</option>
                  <option value="Arancio-Verde">Arancio-Verde</option>
                  <option value="Blu-Marrone">Blu-Marrone</option>
         `;
