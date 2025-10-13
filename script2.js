@@ -375,7 +375,7 @@ specialtySelect.innerHTML += `
 <option value="Percorso-Kata">Percorso-Kata</option>
 <option value="percorso-Palloncino">Percorso-Palloncino</option>
 <option value="ParaKarate">ParaKarate</option>`;
-} else if (birthYear <= 2017) {
+} else if (birthYear >= 2008 && birthYear <= 2017) {
 specialtySelect.innerHTML += `
 <option value="Kata">Kata</option>
 <option value="Kumite">Kumite</option>
