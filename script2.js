@@ -16,38 +16,42 @@ function getMaxAthletesForSpecialty(specialty) {
 // Funzione per aggiornare il contatore visualizzato
 async function updateAthleteCountDisplay(specialty) {
     const maxAthletes = getMaxAthletesForSpecialty(specialty);
-    const {
-        data: currentCount,
-        error: countError
+
+    // ⭐️ CORREZIONE: Usa .select('*', { count: 'exact', head: true }) per ottenere solo il conteggio.
+    const { 
+        count, // Ottieni il conteggio direttamente dalla proprietà 'count'
+        error: countError 
     } = await supabase
         .from('atleti')
-        .select('count', {
-            count: 'exact'
+        .select('*', { // Seleziona tutto ma non restituisce righe con head: true
+            count: 'exact', 
+            head: true  // Aggiungiamo head: true per non scaricare i dati effettivi
         })
-        .eq('specialty', specialty)
-        .single();
+        .eq('specialty', specialty); // Filtra per specialità
 
     if (countError) {
         console.error(`Errore nel conteggio degli atleti per ${specialty}:`, countError.message);
         return;
     }
 
-    const count = currentCount ? currentCount.count : 0;
-    const remainingSlots = maxAthletes - count;
+    // Il valore 'count' è ora direttamente disponibile e dovrebbe essere un numero.
+    const currentCount = count || 0; 
+    const remainingSlots = maxAthletes - currentCount;
 
     let counterElementId = '';
     if (specialty === "Kumite") {
         counterElementId = 'kumiteAthleteCountDisplay';
     } else if (specialty === "Kata") {
         counterElementId = 'kataAthleteCountDisplay';
-} else if (specialty === "ParaKarate") {
-        counterElementId = 'ParaKarateAthleteCountDisplay'
-} else if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
+    } else if (specialty === "ParaKarate") {
+        counterElementId = 'ParaKarateAthleteCountDisplay';
+    } else if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
         counterElementId = 'KIDSAthleteCountDisplay';
     }
 
     const counterElement = document.getElementById(counterElementId);
     if (counterElement) {
+        // Usa currentCount invece di count per chiarezza, anche se in questo scope sono la stessa variabile
         counterElement.textContent = `Posti disponibili per ${specialty}: ${remainingSlots} / ${maxAthletes}`;
     }
 }
