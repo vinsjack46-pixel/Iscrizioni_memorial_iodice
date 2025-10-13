@@ -52,7 +52,7 @@ async function updateAthleteCountDisplay(specialty) {
     let counterElementId = '';
     
     // Logica per le specialità unificate KIDS
-    if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
+    if (specialty === "percorso-Palloncino" || specialty === "Percorso-Kata") {
         const result = await getKidsCount();
         if (result.error) return;
         currentCount = result.count;
