@@ -1,6 +1,4 @@
-// La variabile 'supabase' DEVE essere definita e inizializzata nel tuo ambiente HTML/JS.
-// Esempio (non incluso qui, deve essere nel tuo file HTML/config):
-// const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ASSUNZIONE: La variabile 'supabase' è definita e inizializzata altrove.
 
 //================================================================================
 // 1. GESTIONE LIMITI MASSIMI E CONTEGGIO UNIFICATO KIDS
@@ -15,15 +13,15 @@ function getMaxAthletesForSpecialty(specialty) {
     } else if (specialty === "ParaKarate") {
         return 50;
     } 
-    // Limite unificato per le specialità Percorso
-    else if (specialty === "percorso-Palloncino" || specialty === "Percorso-Kata") {
+    // Limite unificato per le specialità Percorso (Palloncino/Kata)
+    else if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
         return 600; 
     } else {
         return Infinity;
     }
 }
 
-// Funzione per ottenere il conteggio totale degli atleti KIDS (unificato per Palloncino e Kata)
+// Funzione per ottenere il conteggio totale unificato degli atleti KIDS
 async function getKidsCount() {
     const specialtyList = ["Percorso-Palloncino", "Percorso-Kata"];
     
@@ -36,7 +34,7 @@ async function getKidsCount() {
             count: 'exact', 
             head: true 
         })
-        .in('specialty', specialtyList); // Usa .in() per contare entrambe le specialità
+        .in('specialty', specialtyList); 
 
     if (error) {
         console.error("Errore nel conteggio atleti KIDS:", error.message);
@@ -52,7 +50,7 @@ async function updateAthleteCountDisplay(specialty) {
     let counterElementId = '';
     
     // Logica per le specialità unificate KIDS
-    if (specialty === "percorso-Palloncino" || specialty === "Percorso-Kata") {
+    if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
         const result = await getKidsCount();
         if (result.error) return;
         currentCount = result.count;
@@ -88,7 +86,6 @@ async function updateAthleteCountDisplay(specialty) {
 
     const counterElement = document.getElementById(counterElementId);
     if (counterElement) {
-        // Visualizza il conteggio corretto, usando 'KIDS' se unificato
         const displaySpecialty = (counterElementId === 'KIDSAthleteCountDisplay') ? 'KIDS' : specialty;
         counterElement.textContent = `Posti disponibili per ${displaySpecialty}: ${remainingSlots} / ${maxAthletes}`;
     }
@@ -99,17 +96,15 @@ async function updateAllCounters() {
     await updateAthleteCountDisplay("Kumite");
     await updateAthleteCountDisplay("Kata");
     await updateAthleteCountDisplay("ParaKarate");
-    // Aggiorna il contatore KIDS chiamando una delle due specialità
+    // Aggiorna il contatore KIDS (usando una delle due specialità per innescare la logica unificata)
     await updateAthleteCountDisplay("Percorso-Kata"); 
 }
 
-
 //================================================================================
-// 2. LOGICA DI INSERIMENTO ATLETA (ADD ATHLETE)
+// 2. LOGICA DI INSERIMENTO E GESTIONE DATI
 //================================================================================
 
 function addAthleteToTable(athlete) {
-    // ... (Mantieni invariata la logica di visualizzazione della riga)
     const athleteList = document.getElementById('athleteList');
     const row = athleteList.insertRow();
 
@@ -119,9 +114,7 @@ function addAthleteToTable(athlete) {
     const birthdateCell = row.insertCell(); birthdateCell.textContent = athlete.birthdate;
     const beltCell = row.insertCell(); beltCell.textContent = athlete.belt;
     const classeCell = row.insertCell(); classeCell.textContent = athlete.classe;
-
     const specialtyCell = row.insertCell(); specialtyCell.textContent = athlete.specialty; // Indice 6
-    
     const weightCategoryCell = row.insertCell(); weightCategoryCell.textContent = athlete.weight_category || '';
     const societyCell = row.insertCell(); societyCell.textContent = athlete.society_id;
 
@@ -149,30 +142,28 @@ async function addAthlete() {
         return;
     }
 
+    // Trova l'ID della società
     const { data: societyData, error: societyError } = await supabase
         .from('societa')
         .select('id')
         .eq('nome', societyName)
         .single();
 
-    if (societyError) {
+    if (societyError || !societyData) {
         alert('Società non trovata o errore di accesso.');
         return;
     }
-
     const societyId = societyData.id;
 
     const maxAthletes = getMaxAthletesForSpecialty(specialty);
     let currentCount = 0;
     
-    // ⭐️ LOGICA DI PRE-VERIFICA DEL LIMITE AGGIORNATA
+    // LOGICA DI PRE-VERIFICA DEL LIMITE
     if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
-        // Usa il conteggio unificato per i percorsi
         const result = await getKidsCount();
         if (result.error) return;
         currentCount = result.count;
     } else {
-        // Usa il conteggio standard per le altre specialità
         const { count, error: countError } = await supabase
             .from('atleti')
             .select('*', { count: 'exact', head: true }) 
@@ -214,23 +205,31 @@ async function addAthlete() {
         alert('Atleta aggiunto con successo!');
         addAthleteToTable(newAthlete[0]); 
 
-        // ⭐️ AGGIORNA TUTTI I CONTATORI RELEVANTI
+        // Aggiorna tutti i contatori
         await updateAllCounters();
         
-        // Pulisci il form (lascio le pulizie parziali come nel tuo codice)
+        // ⭐️ LOGICA DI PULIZIA CAMPI AGGIUNTA QUI ⭐️
         document.getElementById("firstName").value = "";
         document.getElementById("lastName").value = "";
-        // Assumi che tu abbia la logica per pulire tutti i campi
+        
+        const checkedGender = document.querySelector('input[name="gender"]:checked');
+        if (checkedGender) {
+            checkedGender.checked = false;
+        }
+
+        // Resetta le selezioni del form
+        document.getElementById("birthdate").value = ""; 
+        document.getElementById("classe").value = "";
+        document.getElementById("specialty").value = "";
+        document.getElementById("weightCategory").value = "";
+        document.getElementById("belt").value = "";
+        
+        // Chiama le tue funzioni per resettare le opzioni visualizzate
+        // Assumo che queste funzioni debbano esistere nel tuo script
+        // toggleWeightCategory(); 
+        // updateBeltOptions(); 
     }
-}
-
-
-//================================================================================
-// 3. RECUPERO E RIMOZIONE (FETCH & REMOVE)
-//================================================================================
-
-async function fetchAthletes() {
-    // ... (Mantieni invariata la logica di autenticazione e recupero atleti per società)
+}async function fetchAthletes() {
     const athleteList = document.getElementById('athleteList');
     athleteList.innerHTML = ''; 
 
@@ -267,13 +266,13 @@ async function fetchAthletes() {
         athletesData.forEach(athlete => addAthleteToTable(athlete));
     }
 
-    // ⭐️ AGGIORNA TUTTI I CONTATORI AL CARICAMENTO DELLA PAGINA
+    // Aggiorna tutti i contatori al caricamento della pagina
     await updateAllCounters();
 }
 
 async function removeAthlete(athleteId, rowToRemove) {
     if (confirm('Sei sicuro di voler rimuovere questo atleta?')) {
-        const specialtyToRemove = rowToRemove.cells[6].textContent; // Indice della cella specialità
+        const specialtyToRemove = rowToRemove.cells[6].textContent; 
         
         const { error } = await supabase
             .from('atleti')
@@ -287,23 +286,16 @@ async function removeAthlete(athleteId, rowToRemove) {
             alert('Atleta rimosso con successo!');
             rowToRemove.remove();
             
-            // ⭐️ AGGIORNA TUTTI I CONTATORI DOPO LA RIMOZIONE
+            // Aggiorna tutti i contatori dopo la rimozione
             await updateAllCounters();
         }
     }
 }
 
-
-//================================================================================
-// 4. ESECUZIONE (Inizializzazione)
-//================================================================================
-
 // Chiama fetchAthletes all'avvio per popolare la tabella e i contatori
 document.addEventListener('DOMContentLoaded', fetchAthletes);
 
-
-
-     function toggleWeightCategory() {
+function toggleWeightCategory() {
 const specialty = document.getElementById("specialty").value;
 const gender = document.querySelector('input[name="gender"]:checked').value;
 const weightCategoryField = document.getElementById("weightCategory");
@@ -484,7 +476,7 @@ specialtySelect.innerHTML = "";
 if (birthYear >= 2018 && birthYear <= 2021) {
 specialtySelect.innerHTML += `
 <option value="Percorso-Kata">Percorso-Kata</option>
-<option value="percorso-Palloncino">Percorso-Palloncino</option>
+<option value="Percorso-Palloncino">Percorso-Palloncino</option>
 <option value="ParaKarate">ParaKarate</option>`;
 } else if (birthYear >= 2008 && birthYear <= 2017) {
 specialtySelect.innerHTML += `
