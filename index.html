@@ -89,6 +89,18 @@
             background-color: #007BFF;
             color: white;
         }
+        
+        /* Stile aggiuntivo per la tabella piccola dei contatori */
+        #slotsTable {
+            width: 60%; /* Rendi la tabella più stretta */
+            margin-top: 30px;
+            margin-left: auto; /* Centra la tabella stretta */
+            margin-right: auto;
+            font-size: 0.9em;
+        }
+        #slotsTable th {
+            background-color: #343a40; /* Sfondo scuro per contrasto */
+        }
 
     </style>
 </head>
@@ -98,13 +110,6 @@
         <h2 id="societyNameDisplay"></h2>
         <h1>Modulo di Iscrizione Atleti</h1>
 
-        <div id="counterDisplays" style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #e9ecef;">
-            <h3>Posti Disponibili (Aggiornati)</h3>
-            <p id="kumiteAthleteCountDisplay">Caricamento Kumite...</p>
-            <p id="kataAthleteCountDisplay">Caricamento Kata...</p>
-            <p id="ParaKarateAthleteCountDisplay">Caricamento ParaKarate...</p>
-            <p id="KIDSAthleteCountDisplay">Caricamento KIDS (Percorso/Palloncino/Kata)...</p>
-        </div>
         <form id="athleteForm">
             <label for="firstName">Nome:</label>
             <input type="text" id="firstName" name="firstName" required placeholder="Inserisci il nome">
@@ -138,7 +143,8 @@
                 <button type="button" onclick="logout()">Logout</button>
             </div>
         </form>
-        <h2>Lista Atleti</h2>
+
+        <h2>Lista Atleti Iscritti</h2>
         <table id="athleteTable">
             <thead>
                 <tr>
@@ -156,23 +162,53 @@
             </thead>
             <tbody id="athleteList"></tbody>
         </table>
-    </div>
-    
+
+        <div id="counterContainer">
+            <h3 style="text-align: center; margin-top: 30px;">Riepilogo Posti Disponibili</h3>
+            <table id="slotsTable" class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Specialità/Categoria</th>
+                        <th>Posti (Disponibili / Totali)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Kumite</td>
+                        <td id="kumiteAthleteCountDisplay">Caricamento...</td>
+                    </tr>
+                    <tr>
+                        <td>Kata</td>
+                        <td id="kataAthleteCountDisplay">Caricamento...</td>
+                    </tr>
+                    <tr>
+                        <td>ParaKarate</td>
+                        <td id="ParaKarateAthleteCountDisplay">Caricamento...</td>
+                    </tr>
+                    <tr>
+                        <td>KIDS (Percorso)</td>
+                        <td id="KIDSAthleteCountDisplay">Caricamento...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
     <script src="script2.js"></script>
-    
+
     <script>
-        // Logica di autenticazione Supabase (Mantieni invariata)
         async function checkAuth() {
-            // Assumi che 'supabase' sia disponibile globalmente
             const { data } = await supabase.auth.getUser();
             if (!data.user) {
-                // Se l'utente non è autenticato, reindirizza a login.html
                 window.location.href = "login.html";
             }
         }
         checkAuth();
+        
+        // La logica di fetchAthletes (che chiama updateAllCounters)
+        // viene eseguita automaticamente da un listener DOMContentLoaded nel tuo script.
     </script>
 </body>
 
