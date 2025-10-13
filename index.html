@@ -97,6 +97,14 @@
     <div class="form-container">
         <h2 id="societyNameDisplay"></h2>
         <h1>Modulo di Iscrizione Atleti</h1>
+
+        <div id="counterDisplays" style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #e9ecef;">
+            <h3>Posti Disponibili (Aggiornati)</h3>
+            <p id="kumiteAthleteCountDisplay">Caricamento Kumite...</p>
+            <p id="kataAthleteCountDisplay">Caricamento Kata...</p>
+            <p id="ParaKarateAthleteCountDisplay">Caricamento ParaKarate...</p>
+            <p id="KIDSAthleteCountDisplay">Caricamento KIDS (Percorso/Palloncino/Kata)...</p>
+        </div>
         <form id="athleteForm">
             <label for="firstName">Nome:</label>
             <input type="text" id="firstName" name="firstName" required placeholder="Inserisci il nome">
@@ -112,8 +120,8 @@
                 </label>
             </fieldset>
             <label for="birthdate">Data di Nascita:</label>
-            <input type="date" id="birthdate" name="birthdate" required onchange="updateSpecialtyOptionsBasedOnBirthdate()" reuired min="1959-01-01"
-                max="2021-12-31">
+            <input type="date" id="birthdate" name="birthdate" required onchange="updateSpecialtyOptionsBasedOnBirthdate()"
+                reuired min="1959-01-01" max="2021-12-31">
             <label for="classe">Classe:</label>
             <select id="classe" name="classe" required></select>
             <label for="specialty">Specialità:</label>
@@ -127,7 +135,7 @@
             <div style="display: flex;
                 justify-content: space-between; margin-top: 20px;">
                 <button type="button" onclick="addAthlete()">Aggiungi Atleta</button>
-                               <button type="button" onclick="logout()">Logout</button>
+                <button type="button" onclick="logout()">Logout</button>
             </div>
         </form>
         <h2>Lista Atleti</h2>
@@ -149,11 +157,15 @@
             <tbody id="athleteList"></tbody>
         </table>
     </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
     <script src="script2.js"></script>
+    
     <script>
+        // Logica di autenticazione Supabase (Mantieni invariata)
         async function checkAuth() {
+            // Assumi che 'supabase' sia disponibile globalmente
             const { data } = await supabase.auth.getUser();
             if (!data.user) {
                 // Se l'utente non è autenticato, reindirizza a login.html
