@@ -6,7 +6,7 @@ function getMaxAthletesForSpecialty(specialty) {
         return 1;
 } else if (specialty === "ParaKarate") {
         return 1;
-} else if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
+} else if (specialty === "percorso-Palloncino" || specialty === "Percorso-Kata") {
         return 1;
     } else {
         return Infinity;
