@@ -292,9 +292,6 @@ async function removeAthlete(athleteId, rowToRemove) {
     }
 }
 
-// Chiama fetchAthletes all'avvio per popolare la tabella e i contatori
-document.addEventListener('DOMContentLoaded', fetchAthletes);
-
 function toggleWeightCategory() {
 const specialty = document.getElementById("specialty").value;
 const gender = document.querySelector('input[name="gender"]:checked').value;
