@@ -12,7 +12,7 @@ async function signUp(email, password, nomeSocieta, cfs) {
         const { error: societaError } = await supabase.from('societa').insert([{ nome: nomeSocieta, email: email, cfs: cfs, user_id: data.user.id }]);
         if (societaError) throw societaError;
 
-        alert('Registrazione avvenuta!');
+        alert('Registrazione avvenuta! Controlla la tua posta e verifica la tua email');
         window.location.href = '/login.html';
     } catch (error) {
         console.error('Errore:', error.message);
