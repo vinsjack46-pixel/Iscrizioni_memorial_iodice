@@ -453,9 +453,8 @@ if (specialty === "Kumite" && classe === "Esordienti") {
              <option value="-32">-32</option>
              <option value="-37">-37</option>
             <option value="+37">+37</option>
-         `;
-     }
-    else if (specialty === "ParaKarate") {
+         `; }
+     } else if (specialty === "ParaKarate") {
      // Aggiungi le categorie di peso per i senior maschili e femminili
      weightCategoryField.removeAttribute("disabled");
      weightCategoryField.innerHTML = "";
@@ -487,7 +486,7 @@ if (specialty === "Kumite" && classe === "Esordienti") {
             <option value="K35">K 35</option>
                <option value="K36">K 36</option>
              <option value="K40">K 40</option>
-         `;
+         `;  }
      }else {
     weightCategoryField.setAttribute("disabled", "disabled");
     weightCategoryField.innerHTML = "";
