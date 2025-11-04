@@ -475,12 +475,18 @@ specialtySelect.innerHTML += `
 <option value="Percorso-Kata">Percorso-Kata</option>
 <option value="Percorso-Palloncino">Percorso-Palloncino</option>
 <option value="ParaKarate">ParaKarate</option>`;
-} else if (birthYear >= 2008 && birthYear <= 2017) {
+} else if (birthYear >= 2016 && birthYear <= 2017) {
+specialtySelect.innerHTML += `
+<option value="Kata">Kata</option>
+<option value="Kumite">Kumite</option>
+<option value="Kumite">Palloncino</option>
+<option value="ParaKarate">ParaKarate</option>`;
+} else if (birthYear >= 2008 && birthYear <= 2015) {
 specialtySelect.innerHTML += `
 <option value="Kata">Kata</option>
 <option value="Kumite">Kumite</option>
 <option value="ParaKarate">ParaKarate</option>`;
-    } else if (birthYear >= 1959 && birthYear <= 2007) {
+} else if (birthYear >= 1959 && birthYear <= 2007) {
 specialtySelect.innerHTML += `
 <option value="ParaKarate">ParaKarate</option>`;
 } else {
