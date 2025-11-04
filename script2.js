@@ -488,8 +488,7 @@ if (specialty === "Kumite" && classe === "Esordienti") {
                <option value="K36">K 36</option>
              <option value="K40">K 40</option>
          `;
-     }
-} else {
+     }else {
     weightCategoryField.setAttribute("disabled", "disabled");
     weightCategoryField.innerHTML = "";
 }
