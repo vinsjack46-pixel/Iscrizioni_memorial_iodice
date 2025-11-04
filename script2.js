@@ -479,7 +479,7 @@ specialtySelect.innerHTML += `
 specialtySelect.innerHTML += `
 <option value="Kata">Kata</option>
 <option value="Kumite">Kumite</option>
-<option value="Kumite">Palloncino</option>
+<option value="Percorso-Palloncino">Palloncino</option>
 <option value="ParaKarate">ParaKarate</option>`;
 } else if (birthYear >= 2008 && birthYear <= 2015) {
 specialtySelect.innerHTML += `
