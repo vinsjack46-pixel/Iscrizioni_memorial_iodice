@@ -14,7 +14,7 @@ function getMaxAthletesForSpecialty(specialty) {
         return 50;
     } 
     // Limite unificato per le specialità Percorso (Palloncino/Kata)
-    else if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
+    else if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata" || specialty === "Palloncino") {
         return 600; 
     } else {
         return Infinity;
@@ -23,7 +23,7 @@ function getMaxAthletesForSpecialty(specialty) {
 
 // Funzione per ottenere il conteggio totale unificato degli atleti KIDS
 async function getKidsCount() {
-    const specialtyList = ["Percorso-Palloncino", "Percorso-Kata"];
+    const specialtyList = ["Percorso-Palloncino", "Percorso-Kata", "Palloncino"];
     
     const { 
         count, 
@@ -50,7 +50,7 @@ async function updateAthleteCountDisplay(specialty) {
     let counterElementId = '';
     
     // Logica per le specialità unificate KIDS
-    if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
+    if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata" || specialty === "Palloncino") {
         const result = await getKidsCount();
         if (result.error) return;
         currentCount = result.count;
@@ -159,7 +159,7 @@ async function addAthlete() {
     let currentCount = 0;
     
     // LOGICA DI PRE-VERIFICA DEL LIMITE
-    if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata") {
+    if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata" || specialty === "Palloncino") {
         const result = await getKidsCount();
         if (result.error) return;
         currentCount = result.count;
@@ -479,7 +479,7 @@ specialtySelect.innerHTML += `
 specialtySelect.innerHTML += `
 <option value="Kata">Kata</option>
 <option value="Kumite">Kumite</option>
-<option value="Percorso-Palloncino">Palloncino</option>
+<option value="Palloncino">Palloncino</option>
 <option value="ParaKarate">ParaKarate</option>`;
 } else if (birthYear >= 2008 && birthYear <= 2015) {
 specialtySelect.innerHTML += `
