@@ -82,7 +82,7 @@ if (registrazioneForm) {
     registrazioneForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const nomeSocieta = document.getElementById('nomeSocieta').value;
-        const email = document.getElementById('email').value;
+        const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const cfs = document.getElementById('cfs').value
         await signUp(email, password, nomeSocieta, cfs);
