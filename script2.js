@@ -11,7 +11,7 @@ function getMaxAthletesForSpecialty(specialty) {
     } else if (specialty === "Kata") {
         return 200;
     } else if (specialty === "ParaKarate") {
-        return 100;
+        return 50;
     } 
     // Limite unificato per le specialità Percorso (Palloncino/Kata)
     else if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata" || specialty === "Palloncino") {
