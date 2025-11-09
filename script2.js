@@ -7,7 +7,7 @@
 // Funzione per ottenere il limite massimo di atleti per specialità
 function getMaxAthletesForSpecialty(specialty) {
     if (specialty === "Kumite") {
-        return 661;
+        return 672;
     } else if (specialty === "Kata") {
         return 145;
     } else if (specialty === "ParaKarate") {
