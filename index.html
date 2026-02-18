@@ -193,26 +193,22 @@
             </table>
         </div>
         </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script src="script.js"></script>
+    
+    <script src="script2.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js"></script>
-<script src="script2.js"></script>
-
-<script>
-    // Usiamo un listener per essere sicuri che tutto sia caricato
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            // Controlliamo se supabase esiste (senza farlo crashare)
-            if (typeof supabase !== 'undefined') {
-                const { data, error } = await supabase.auth.getUser();
-                if (error || !data.user) {
+    <script>
+        (async function() {
+            // Usiamo il client definito in script.js
+            if (window.supabaseClient) {
+                const { data } = await window.supabaseClient.auth.getUser();
+                if (!data || !data.user) {
                     window.location.href = "login.html";
                 }
-            } else {
-                console.error("Il client Supabase non è definito. Controlla script.js");
             }
-        } catch (e) {
-            console.error("Errore durante il checkAuth:", e);
-        }
-    });
-</script>
+        })();
+    </script>
+</body>
+</html>
