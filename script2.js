@@ -1,295 +1,66 @@
-// ASSUNZIONE: La variabile 'supabase' è definita e inizializzata altrove.
 // script2.js
 const sb = window.supabaseClient;
-//================================================================================
-// 1. GESTIONE LIMITI MASSIMI E CONTEGGIO UNIFICATO KIDS
-//================================================================================
 
-// Funzione per ottenere il limite massimo di atleti per specialità
+// Calcolo limiti e conteggi
 function getMaxAthletesForSpecialty(specialty) {
-    if (specialty === "Kumite") {
-        return 6;
-    } else if (specialty === "Kata") {
-        return 5;
-    } else if (specialty === "ParaKarate") {
-        return 5;
-    } 
-    // Limite unificato per le specialità Percorso (Palloncino/Kata)
-    else if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata" || specialty === "Palloncino") {
-        return 5; 
-    } else {
-        return Infinity;
-    }
+    if (specialty === "Kumite") return 672;
+    if (specialty === "Kata") return 145;
+    if (specialty === "ParaKarate") return 50;
+    if (["Percorso-Palloncino", "Percorso-Kata", "Palloncino"].includes(specialty)) return 225;
+    return Infinity;
 }
 
-// Funzione per ottenere il conteggio totale unificato degli atleti KIDS
-async function getKidsCount() {
-    const specialtyList = ["Percorso-Palloncino", "Percorso-Kata", "Palloncino"];
-    
-    const { 
-        count, 
-        error 
-    } = await supabase
-        .from('atleti')
-        .select('*', { 
-            count: 'exact', 
-            head: true 
-        })
-        .in('specialty', specialtyList); 
-
-    if (error) {
-        console.error("Errore nel conteggio atleti KIDS:", error.message);
-        return { count: 0, error: error };
-    }
-    return { count: count || 0, error: null };
-}
-
-// Funzione per aggiornare il contatore visualizzato
-async function updateAthleteCountDisplay(specialty) {
-    let currentCount = 0;
-    let maxAthletes = getMaxAthletesForSpecialty(specialty);
-    let counterElementId = '';
-    
-    // Logica per le specialità unificate KIDS
-    if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata" || specialty === "Palloncino") {
-        const result = await getKidsCount();
-        if (result.error) return;
-        currentCount = result.count;
-        counterElementId = 'KIDSAthleteCountDisplay';
-    } 
-    // Logica per le specialità singole
-    else {
-        // Mappatura per l'ID HTML
-        counterElementId = (specialty === "Kumite") ? 'kumiteAthleteCountDisplay' : 
-                           (specialty === "Kata") ? 'kataAthleteCountDisplay' : 
-                           (specialty === "ParaKarate") ? 'ParaKarateAthleteCountDisplay' : '';
-
-        // Query per il conteggio standard
-        const { 
-            count, 
-            error: countError 
-        } = await supabase
-            .from('atleti')
-            .select('*', { 
-                count: 'exact', 
-                head: true 
-            })
-            .eq('specialty', specialty);
-
-        if (countError) {
-            console.error(`Errore nel conteggio degli atleti per ${specialty}:`, countError.message);
-            return;
-        }
-        currentCount = count || 0;
-    }
-
-    const remainingSlots = maxAthletes - currentCount;
-
-    const counterElement = document.getElementById(counterElementId);
-    if (counterElement) {
-        const displaySpecialty = (counterElementId === 'KIDSAthleteCountDisplay') ? 'KIDS' : specialty;
-        counterElement.textContent = `Posti disponibili per ${displaySpecialty}: ${remainingSlots} / ${maxAthletes}`;
-    }
-}
-
-// Funzione per chiamare l'aggiornamento di tutti i contatori rilevanti
 async function updateAllCounters() {
-    await updateAthleteCountDisplay("Kumite");
-    await updateAthleteCountDisplay("Kata");
-    await updateAthleteCountDisplay("ParaKarate");
-    // Aggiorna il contatore KIDS (usando una delle due specialità per innescare la logica unificata)
-    await updateAthleteCountDisplay("Percorso-Kata"); 
+    const specialties = ["Kumite", "Kata", "ParaKarate"];
+    for (const spec of specialties) {
+        const { count } = await sb.from('atleti').select('*', { count: 'exact', head: true }).eq('specialty', spec);
+        const el = document.getElementById(spec.toLowerCase() + 'AthleteCountDisplay');
+        if (el) el.textContent = `${getMaxAthletesForSpecialty(spec) - (count || 0)} / ${getMaxAthletesForSpecialty(spec)}`;
+    }
+    
+    // KIDS (Unificato)
+    const { count: kidsCount } = await sb.from('atleti').select('*', { count: 'exact', head: true }).in('specialty', ["Percorso-Palloncino", "Percorso-Kata", "Palloncino"]);
+    const kidsEl = document.getElementById('KIDSAthleteCountDisplay');
+    if (kidsEl) kidsEl.textContent = `${225 - (kidsCount || 0)} / 225`;
 }
 
-//================================================================================
-// 2. LOGICA DI INSERIMENTO E GESTIONE DATI
-//================================================================================
-
+// Gestione tabella atleti
 function addAthleteToTable(athlete) {
-    const athleteList = document.getElementById('athleteList');
-    const row = athleteList.insertRow();
-
-    const nameCell = row.insertCell(); nameCell.textContent = athlete.first_name;
-    const lastNameCell = row.insertCell(); lastNameCell.textContent = athlete.last_name;
-    const genderCell = row.insertCell(); genderCell.textContent = athlete.gender;
-    const birthdateCell = row.insertCell(); birthdateCell.textContent = athlete.birthdate;
-    const beltCell = row.insertCell(); beltCell.textContent = athlete.belt;
-    const classeCell = row.insertCell(); classeCell.textContent = athlete.classe;
-    const specialtyCell = row.insertCell(); specialtyCell.textContent = athlete.specialty; // Indice 6
-    const weightCategoryCell = row.insertCell(); weightCategoryCell.textContent = athlete.weight_category || '';
-    const societyCell = row.insertCell(); societyCell.textContent = athlete.society_id;
-
-    const actionsCell = row.insertCell();
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'Rimuovi';
-    removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
-    removeButton.addEventListener('click', () => removeAthlete(athlete.id, row));
-    actionsCell.appendChild(removeButton);
+    const list = document.getElementById('athleteList');
+    if (!list) return;
+    const row = list.insertRow();
+    row.innerHTML = `
+        <td>${athlete.first_name}</td>
+        <td>${athlete.last_name}</td>
+        <td>${athlete.gender}</td>
+        <td>${athlete.birthdate}</td>
+        <td>${athlete.belt}</td>
+        <td>${athlete.classe}</td>
+        <td>${athlete.specialty}</td>
+        <td>${athlete.weight_category || '-'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="removeAthlete('${athlete.id}', this.parentElement.parentElement)">Elimina</button></td>
+    `;
 }
 
-async function addAthlete() {
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
-    const gender = document.querySelector('input[name="gender"]:checked');
-    const birthdate = document.getElementById("birthdate").value;
-    const classe = document.getElementById("classe").value;
-    const specialty = document.getElementById("specialty").value;
-    const weightCategory = document.getElementById("weightCategory").value;
-    const belt = document.getElementById("belt").value;
-    const societyName = document.getElementById("society").value;
+async function fetchAthletes() {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return;
 
-    if (!firstName || !lastName || !gender || !gender.checked || !birthdate || !classe || !specialty || !belt || !societyName) {
-        alert("Mancano campi obbligatori.");
-        return;
+    const { data: society } = await sb.from('societa').select('id, nome').eq('user_id', user.id).single();
+    if (society) {
+        document.getElementById('societyNameDisplay').textContent = society.nome;
+        const { data: athletes } = await sb.from('atleti').select('*').eq('society_id', society.id);
+        const list = document.getElementById('athleteList');
+        if (list) list.innerHTML = '';
+        if (athletes) athletes.forEach(addAthleteToTable);
     }
-
-    // Trova l'ID della società
-    const { data: societyData, error: societyError } = await supabase
-        .from('societa')
-        .select('id')
-        .eq('nome', societyName)
-        .single();
-
-    if (societyError || !societyData) {
-        alert('Società non trovata o errore di accesso.');
-        return;
-    }
-    const societyId = societyData.id;
-
-    const maxAthletes = getMaxAthletesForSpecialty(specialty);
-    let currentCount = 0;
-    
-    // LOGICA DI PRE-VERIFICA DEL LIMITE
-    if (specialty === "Percorso-Palloncino" || specialty === "Percorso-Kata" || specialty === "Palloncino") {
-        const result = await getKidsCount();
-        if (result.error) return;
-        currentCount = result.count;
-    } else {
-        const { count, error: countError } = await supabase
-            .from('atleti')
-            .select('*', { count: 'exact', head: true }) 
-            .eq('specialty', specialty);
-            
-        if (countError) {
-            console.error('Errore nel conteggio degli atleti:', countError.message);
-            alert('Errore interno del server.');
-            return;
-        }
-        currentCount = count || 0;
-    }
-    
-    // Controllo del limite
-    if (currentCount >= maxAthletes) {
-        alert(`Siamo spiacenti, il numero massimo di iscritti alla categoria ${specialty} (limite: ${maxAthletes}) è stato raggiunto.`);
-        return;
-    }
-
-    // Inserisci l'atleta
-    const { data: newAthlete, error } = await supabase
-        .from('atleti')
-        .insert([{
-            first_name: firstName,
-            last_name: lastName,
-            gender: gender.value,
-            birthdate: birthdate,
-            classe: classe,
-            specialty: specialty,
-            weight_category: weightCategory,
-            belt: belt,
-            society_id: societyId
-        }]).select();
-
-    if (error) {
-        console.error('Errore aggiunta atleta:', error.message);
-        alert('Errore durante l\'aggiunta dell\'atleta.');
-    } else if (newAthlete && newAthlete.length > 0) {
-        alert('Atleta aggiunto con successo!');
-        addAthleteToTable(newAthlete[0]); 
-
-        // Aggiorna tutti i contatori
-        await updateAllCounters();
-        
-        // ⭐️ LOGICA DI PULIZIA CAMPI AGGIUNTA QUI ⭐️
-        document.getElementById("firstName").value = "";
-        document.getElementById("lastName").value = "";
-        
-        const checkedGender = document.querySelector('input[name="gender"]:checked');
-        if (checkedGender) {
-            checkedGender.checked = false;
-        }
-
-        // Resetta le selezioni del form
-        document.getElementById("birthdate").value = ""; 
-        document.getElementById("classe").value = "";
-        document.getElementById("specialty").value = "";
-        document.getElementById("weightCategory").value = "";
-        document.getElementById("belt").value = "";
-        
-        // Chiama le tue funzioni per resettare le opzioni visualizzate
-        // Assumo che queste funzioni debbano esistere nel tuo script
-        // toggleWeightCategory(); 
-        // updateBeltOptions(); 
-    }
-}async function fetchAthletes() {
-    const athleteList = document.getElementById('athleteList');
-    athleteList.innerHTML = ''; 
-
-    const user = await supabase.auth.getUser();
-    if (!user.data ?.user ?.id) {
-        console.log("Utente non loggato.");
-        return;
-    }
-
-    const { data: societyData, error: societyError } = await supabase
-        .from('societa')
-        .select('id')
-        .eq('user_id', user.data.user.id)
-        .single();
-        
-    if (societyError || !societyData) {
-        console.error('Nessuna società trovata per questo utente o errore:', societyError?.message);
-        return;
-    }
-
-    const societyId = societyData.id;
-
-    const { data: athletesData, error: athletesError } = await supabase  
-       .from('atleti')
-       .select('*')
-       .eq('society_id', societyId);
-       
-    if (athletesError) {
-        console.error('Errore nel recupero degli atleti:', athletesError.message);
-        return;
-    }
-
-    if (athletesData) {
-        athletesData.forEach(athlete => addAthleteToTable(athlete));
-    }
-
-    // Aggiorna tutti i contatori al caricamento della pagina
-    await updateAllCounters();
+    updateAllCounters();
 }
 
-async function removeAthlete(athleteId, rowToRemove) {
-    if (confirm('Sei sicuro di voler rimuovere questo atleta?')) {
-        const specialtyToRemove = rowToRemove.cells[6].textContent; 
-        
-        const { error } = await supabase
-            .from('atleti')
-            .delete()
-            .eq('id', athleteId);
-            
-        if (error) {
-            console.error('Errore durante la rimozione dell\'atleta:', error.message);
-            alert('Errore durante la rimozione dell\'atleta.');
-        } else {
-            alert('Atleta rimosso con successo!');
-            rowToRemove.remove();
-            
-            // Aggiorna tutti i contatori dopo la rimozione
-            await updateAllCounters();
-        }
+async function removeAthlete(id, row) {
+    if (confirm("Rimuovere definitivamente questo atleta?")) {
+        const { error } = await sb.from('atleti').delete().eq('id', id);
+        if (!error) { row.remove(); updateAllCounters(); }
     }
 }
 
