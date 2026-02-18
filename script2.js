@@ -1,5 +1,6 @@
 // ASSUNZIONE: La variabile 'supabase' è definita e inizializzata altrove.
-
+// script2.js
+const sb = window.supabaseClient;
 //================================================================================
 // 1. GESTIONE LIMITI MASSIMI E CONTEGGIO UNIFICATO KIDS
 //================================================================================
