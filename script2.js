@@ -1,5 +1,6 @@
 // script2.js
 const sb = window.supabaseClient;
+let currentSocietyId = null; // Memorizziamo l'ID per il salvataggio
 
 // --- 1. GESTIONE CONTEGGI ---
 function getMaxAthletesForSpecialty(specialty) {
@@ -32,6 +33,40 @@ async function updateAthleteCountDisplay(specialty) {
     if (element) element.textContent = `${max - currentCount} / ${max}`;
 }
 
+// --- 1. FUNZIONE DI SALVATAGGIO (SUBMIT) ---
+async function addAthlete(event) {
+    event.preventDefault(); // Impedisce il ricaricamento della pagina
+
+    if (!currentSocietyId) {
+        alert("Errore: ID società non trovato. Ricarica la pagina.");
+        return;
+    }
+
+    const athleteData = {
+        first_name: document.getElementById('first_name').value,
+        last_name: document.getElementById('last_name').value,
+        gender: document.querySelector('input[name="gender"]:checked').value,
+        birthdate: document.getElementById('birthdate').value,
+        belt: document.getElementById('belt').value,
+        classe: document.getElementById('classe').value,
+        specialty: document.getElementById('specialty').value,
+        weight_category: document.getElementById('weightCategory').value || null,
+        society_id: currentSocietyId
+    };
+
+    try {
+        const { data, error } = await sb.from('atleti').insert([athleteData]).select();
+        
+        if (error) throw error;
+
+        alert("Atleta aggiunto con successo!");
+        document.getElementById('athleteForm').reset(); // Pulisce il modulo
+        fetchAthletes(); // Aggiorna tabella e contatori
+    } catch (error) {
+        console.error("Errore durante il salvataggio:", error.message);
+        alert("Errore nel salvataggio: " + error.message);
+    }
+}
 
 // --- 1. AGGIORNAMENTO CINTURE IN BASE ALLA CLASSE ---
 function updateBelts(classe) {
