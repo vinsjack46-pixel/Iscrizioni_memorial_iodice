@@ -196,15 +196,15 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script src="script.js"></script>
-    
     <script src="script2.js"></script>
 
     <script>
+        // Questa funzione ora usa supabaseClient definito in script.js
         (async function() {
-            // Usiamo il client definito in script.js
             if (window.supabaseClient) {
                 const { data } = await window.supabaseClient.auth.getUser();
                 if (!data || !data.user) {
+                    console.log("Utente non loggato, reindirizzamento...");
                     window.location.href = "login.html";
                 }
             }
