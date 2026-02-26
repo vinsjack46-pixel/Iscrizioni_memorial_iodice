@@ -1,39 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-    <title>Registrazione Società</title>
-    <style>
-        body { font-family: sans-serif; }
-        .container { width: 300px; margin: 50px auto; }
-    </style>
+    <meta charset="UTF-8">
+    <title>Nuova Password</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
 </head>
-    <link rel="stylesheet" href="style.css">
-<body>
-    <div class="container">
-        <h1>Registrazione Società</h1>
-        <form id="registrazioneForm">
-            <label for="nomeSocieta">Nome Società:</label><br>
-            <input type="text" id="nomeSocieta" required><br><br>
-            
-            <label for="email">Email:</label><br>
-            <input type="email" id="email" required><br><br>
-            
-            <label for="emailConfirm">Conferma Email:</label><br>
-            <input type="email" id="emailConfirm" required><br><br>
-            
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" required><br><br>
-            
-            <label for="passwordConfirm">Conferma Password:</label><br>
-            <input type="password" id="passwordConfirm" required><br><br>
-            
-            <label for="cfs">Cellulare Tecnico:</label><br>
-             <input type="numeric" id="cfs" maxlength="10" minlength="10"><br><br>
-            <button type="submit">Registrati</button>
-        </form>
-        <p>Già registrato? <a href="login.html">Accedi</a></p>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-4 card p-4">
+                <h4>Imposta Nuova Password</h4>
+                <form id="updatePasswordForm">
+                    <input type="password" id="newPassword" class="form-control mb-3" placeholder="Nuova Password (min. 6 car.)" required>
+                    <input type="password" id="confirmPassword" class="form-control mb-3" placeholder="Conferma Password" required>
+                    <button type="submit" class="btn btn-success btn-block">Salva Password</button>
+                </form>
+            </div>
+        </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
+    <script>
+        document.getElementById('updatePasswordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                alert('Le password non corrispondono!');
+                return;
+            }
+
+            // Usiamo window.supabaseClient come nel tuo script.js
+            const { error } = await window.supabaseClient.auth.updateUser({ 
+                password: newPassword 
+            });
+
+            if (error) {
+                alert("Errore durante l'aggiornamento: " + error.message);
+            } else {
+                alert("Password aggiornata! Ora verrai reindirizzato al login.");
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
 </body>
 </html>
