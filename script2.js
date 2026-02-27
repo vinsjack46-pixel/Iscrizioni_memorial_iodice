@@ -17,7 +17,7 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
     const year = new Date(birthInput.value).getFullYear();
 
     // --- BLOCCO LIMITE ANNI (COPIALO COSÌ) ---
-    if (year < 2010 || year > 2021) {
+    if (year < 1960 || year > 2021) {
         alert("Attenzione: L'anno di nascita (" + year + ") non è ammesso. Range consentito: 2010-2021.");
         birthInput.value = ""; 
         return;
