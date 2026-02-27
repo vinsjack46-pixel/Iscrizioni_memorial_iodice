@@ -8,34 +8,41 @@ const LIMITI = {
     "ParaKarate": 50,
     "KIDS": 225 // Somma di tutte le specialità KIDS
 };
-
-// --- 2. LOGICA CLASSI, CINTURE E BLOCCO DATE ---
 function updateSpecialtyOptionsBasedOnBirthdate() {
     const birthInput = document.getElementById("birthdate");
+    const errorDisplay = document.getElementById("dateError");
+    const submitBtn = document.querySelector('button[type="submit"]');
+    
     if (!birthInput || !birthInput.value) return;
 
     const year = new Date(birthInput.value).getFullYear();
-
-    // --- BLOCCO LIMITE ANNI (COPIALO COSÌ) ---
-    if (year < 1960 || year > 2021) {
-        alert("Attenzione: L'anno di nascita (" + year + ") non è ammesso.");
-        birthInput.value = ""; 
-        return;
+    
+    // Controlliamo se l'anno è completo (4 cifre) e fuori range
+    if (year > 999) { // Evita il check finché l'utente sta scrivendo le prime cifre
+        if (year < 1960 || year > 2021) {
+            errorDisplay.style.display = "block"; // Mostra errore
+            submitBtn.disabled = true;           // Blocca il tasto invio
+            return; 
+        } else {
+            errorDisplay.style.display = "none";  // Nasconde errore
+            submitBtn.disabled = false;          // Riabilita tasto invio
+        }
     }
 
     const clSel = document.getElementById("classe");
     const spSel = document.getElementById("specialty");
     const beltSel = document.getElementById("belt");
     let classe = "";
-    
-    // Suddivisione KIDS U6 e U8 (Seconda Logica Potenziata)
+
+    // Logica Classi Completa
     if (year >= 2020 && year <= 2021) classe = "KIDS U6";
     else if (year >= 2018 && year <= 2019) classe = "KIDS U8";
     else if (year >= 2016 && year <= 2017) classe = "Fanciulli";
     else if (year >= 2014 && year <= 2015) classe = "Ragazzi";
     else if (year >= 2012 && year <= 2013) classe = "Esordienti";
     else if (year >= 2010 && year <= 2011) classe = "Cadetti";
-    else classe = "Seniores/Master";
+    else if (year >= 1991 && year <= 2009) classe = "Seniores";
+    else if (year >= 1960 && year <= 1990) classe = "Master";
 
     clSel.innerHTML = `<option value="${classe}">${classe}</option>`;
     
