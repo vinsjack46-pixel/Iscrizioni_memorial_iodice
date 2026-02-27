@@ -167,7 +167,7 @@ async function fetchAthletes() {
             athletes?.forEach(a => {
                 const row = list.insertRow();
                 row.innerHTML = `
-                    <td>${a.first_name};${a.last_name}</td>
+                    <td>${a.first_name} ${a.last_name}</td>
                   <td>${a.classe}</td>
                   <td>${a.specialty}</td>
                    <td>${a.belt}</td>
