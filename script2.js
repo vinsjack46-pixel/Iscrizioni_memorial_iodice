@@ -9,17 +9,25 @@ const LIMITI = {
     "KIDS": 225 // Somma di tutte le specialità KIDS
 };
 
-// --- 2. LOGICA CLASSI, CINTURE E SPECIALITÀ ---
+// --- 2. LOGICA CLASSI, CINTURE E BLOCCO DATE ---
 function updateSpecialtyOptionsBasedOnBirthdate() {
     const birthInput = document.getElementById("birthdate");
     if (!birthInput || !birthInput.value) return;
 
     const year = new Date(birthInput.value).getFullYear();
+
+    // --- BLOCCO LIMITE ANNI (COPIALO COSÌ) ---
+    if (year < 2010 || year > 2021) {
+        alert("Attenzione: L'anno di nascita (" + year + ") non è ammesso. Range consentito: 2010-2021.");
+        birthInput.value = ""; 
+        return;
+    }
+
     const clSel = document.getElementById("classe");
     const spSel = document.getElementById("specialty");
     const beltSel = document.getElementById("belt");
     let classe = "";
-
+    
     // Suddivisione KIDS U6 e U8 (Seconda Logica Potenziata)
     if (year >= 2020 && year <= 2021) classe = "KIDS U6";
     else if (year >= 2018 && year <= 2019) classe = "KIDS U8";
