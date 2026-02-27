@@ -69,11 +69,11 @@ function toggleWeightCategory() {
 async function updateAllCounters() {
     // Kumite
     const { count: countKumite } = await sb.from('atleti').select('*', { count: 'exact', head: true }).eq('specialty', 'Kumite');
-    document.getElementById('kumiteAthleteCountDisplay').textContent = `${672 - (countKumite || 0)} / 672`;
+    document.getElementById('kumiteAthleteCountDisplay').textContent = `${100 - (countKumite || 0)} / 100`;
 
     // Kata
     const { count: countKata } = await sb.from('atleti').select('*', { count: 'exact', head: true }).eq('specialty', 'Kata');
-    document.getElementById('kataAthleteCountDisplay').textContent = `${145 - (countKata || 0)} / 145`;
+    document.getElementById('kataAthleteCountDisplay').textContent = `${100 - (countKata || 0)} / 100`;
 
     // Para
     const { count: countPara } = await sb.from('atleti').select('*', { count: 'exact', head: true }).eq('specialty', 'ParaKarate');
@@ -81,7 +81,7 @@ async function updateAllCounters() {
 
     // KIDS (Tutte le specialità percorso)
     const { count: countKids } = await sb.from('atleti').select('*', { count: 'exact', head: true }).in('specialty', ["Percorso-Palloncino", "Percorso-Kata", "Palloncino"]);
-    document.getElementById('KIDSAthleteCountDisplay').textContent = `${225 - (countKids || 0)} / 225`;
+    document.getElementById('KIDSAthleteCountDisplay').textContent = `${100 - (countKids || 0)} / 100`;
 }
 
 // --- 4. SALVATAGGIO ---
