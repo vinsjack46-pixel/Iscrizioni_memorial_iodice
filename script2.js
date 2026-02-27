@@ -1,7 +1,3 @@
-// script2.js
-const sb = window.supabaseClient;
-let currentSocietyId = null;
-
 function getMaxAthletesForSpecialty(specialty) {
     if (specialty === "Kumite") {
         return 6;
