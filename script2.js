@@ -24,10 +24,10 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
     clSel.innerHTML = `<option value="${classe}">${classe}</option>`;
     
     // Logica Cinture
-    let belts = ["Bianca", "Bianca/Gialla", "Gialla", "Gialla/Arancio", "Arancio"];
-    if (classe === "Fanciulli") belts.push("Arancio/Verde", "Verde");
-    else if (classe === "Ragazzi") belts.push("Arancio/Verde", "Verde", "Verde/Blu", "Blu", "Blu/Marrone", "Marrone");
-    else if (["Esordienti", "Cadetti", "Seniores/Master"].includes(classe)) belts.push("Arancio/Verde", "Verde", "Verde/Blu", "Blu", "Blu/Marrone", "Marrone", "Nera");
+    let belts = ["Selezionare Cintura"];
+    if (classe === "KIDS") belts.push("Bianca/Gialla", "Arancio/Verde");
+    else if (classe === "Fanciulli") belts.push("Bianca/Gialla", "Arancio/Verde", "Blu/Marrone");
+    else if (["Ragazzi", "Esordienti", "Cadetti", "Seniores/Master"].includes(classe)) belts.push("Bianca/Gialla", "Arancio/Verde", "Blu/Marrone/Nera");
     
     beltSel.innerHTML = belts.map(b => `<option value="${b}">${b}</option>`).join('');
 
