@@ -126,7 +126,7 @@ async function fetchAthletes() {
         list.innerHTML = '';
         athletes?.forEach(a => {
             const row = list.insertRow();
-            row.innerHTML = `<td>${a.first_name} ${a.last_name}</td><td>${a.classe}</td><td>${a.specialty}</td><td>${a.weight_category || '-'}</td><td><button class="btn btn-sm btn-danger" onclick="removeAthlete('${a.id}')">Elimina</button></td>`;
+            row.innerHTML = `<td>${a.first_name} ${a.last_name}</td><td>${a.classe}</td><td>${a.specialty}</td><td>${a.belt}</td><td>${a.weight_category || '-'}</td><td><button class="btn btn-sm btn-danger" onclick="removeAthlete('${a.id}')">Elimina</button></td>`;
         });
     }
     updateAllCounters();
