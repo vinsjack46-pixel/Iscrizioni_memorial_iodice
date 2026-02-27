@@ -1,11 +1,18 @@
-// script2.js
 const sb = window.supabaseClient;
 let currentSocietyId = null;
 
-// --- 1. GESTIONE CLASSI, CINTURE E SPECIALITA' ---
+// --- 1. LIMITI RIGIDI ---
+const LIMITI = {
+    "Kumite": 672,
+    "Kata": 145,
+    "ParaKarate": 50,
+    "KIDS": 225 // Somma di tutte le specialità KIDS
+};
+
+// --- 2. LOGICA CLASSI, CINTURE E SPECIALITÀ ---
 function updateSpecialtyOptionsBasedOnBirthdate() {
     const birthInput = document.getElementById("birthdate");
-    if (!birthInput.value) return;
+    if (!birthInput || !birthInput.value) return;
 
     const year = new Date(birthInput.value).getFullYear();
     const clSel = document.getElementById("classe");
@@ -13,8 +20,9 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
     const beltSel = document.getElementById("belt");
     let classe = "";
 
-    // Logica Classi
-    if (year >= 2018 && year <= 2021) classe = "KIDS";
+    // Suddivisione KIDS U6 e U8 (Seconda Logica Potenziata)
+    if (year >= 2020 && year <= 2021) classe = "KIDS U6";
+    else if (year >= 2018 && year <= 2019) classe = "KIDS U8";
     else if (year >= 2016 && year <= 2017) classe = "Fanciulli";
     else if (year >= 2014 && year <= 2015) classe = "Ragazzi";
     else if (year >= 2012 && year <= 2013) classe = "Esordienti";
@@ -23,71 +31,103 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
 
     clSel.innerHTML = `<option value="${classe}">${classe}</option>`;
     
-    // Logica Cinture
-    let belts = ["Bianca", "Bianca/Gialla", "Gialla", "Gialla/Arancio", "Arancio"];
-    if (classe === "Fanciulli") belts.push("Arancio/Verde", "Verde");
-    else if (classe === "Ragazzi") belts.push("Arancio/Verde", "Verde", "Verde/Blu", "Blu", "Blu/Marrone", "Marrone");
-    else if (["Esordienti", "Cadetti", "Seniores/Master"].includes(classe)) belts.push("Arancio/Verde", "Verde", "Verde/Blu", "Blu", "Blu/Marrone", "Marrone", "Nera");
-    
+    // Gestione Cinture con Accorpamenti (Nessuna opzione vuota)
+    let belts = [];
+    if (classe.includes("KIDS")) {
+        belts = ["Bianca", "Bianca/Gialla", "Gialla", "Gialla/Arancio"];
+    } else {
+        belts = ["Bianca/Gialla", "Gialla/Arancio", "Arancio/Verde", "Verde/Blu", "Blu/Marrone", "Marrone/Nera"];
+    }
     beltSel.innerHTML = belts.map(b => `<option value="${b}">${b}</option>`).join('');
 
-    // Logica Specialità
-    if (classe === "KIDS") {
-        spSel.innerHTML = '<option value="Percorso-Kata">Percorso-Kata</option><option value="Percorso-Palloncino">Percorso-Palloncino</option><option value="ParaKarate">ParaKarate</option>';
+    // Logica Specialità per Classe
+    if (classe.includes("KIDS")) {
+        spSel.innerHTML = `
+            <option value="Percorso-Kata">Percorso-Kata</option>
+            <option value="Percorso-Palloncino">Percorso-Palloncino</option>
+            <option value="ParaKarate">ParaKarate</option>`;
     } else if (classe === "Fanciulli") {
-        spSel.innerHTML = '<option value="Kata">Kata</option><option value="Palloncino">Palloncino</option><option value="ParaKarate">ParaKarate</option>';
+        spSel.innerHTML = `
+            <option value="Kata">Kata</option>
+            <option value="Palloncino">Palloncino</option>
+            <option value="ParaKarate">ParaKarate</option>`;
     } else {
-        spSel.innerHTML = '<option value="Kata">Kata</option><option value="Kumite">Kumite</option><option value="ParaKarate">ParaKarate</option>';
+        spSel.innerHTML = `
+            <option value="Kata">Kata</option>
+            <option value="Kumite">Kumite</option>
+            <option value="ParaKarate">ParaKarate</option>`;
     }
     toggleWeightCategory();
 }
 
-// --- 2. GESTIONE PESI ---
+// --- 3. GESTIONE PESI (Obbligatori per Kumite/Para) ---
 function toggleWeightCategory() {
     const specialty = document.getElementById("specialty").value;
     const classe = document.getElementById("classe")?.value;
     const gender = document.querySelector('input[name="gender"]:checked')?.value;
     const weightField = document.getElementById("weightCategory");
 
-    weightField.innerHTML = '<option value="">-- Seleziona --</option>';
+    weightField.innerHTML = ''; 
     weightField.disabled = true;
 
     if (specialty === "Kumite") {
         weightField.disabled = false;
         let weights = [];
-        if (classe === "Esordienti") weights = (gender === "Maschio") ? ["-40", "-45", "-50", "-55", "+55"] : ["-42", "-47", "-52", "+52"];
-        else if (classe === "Cadetti") weights = (gender === "Maschio") ? ["-52", "-57", "-63", "-70", "+70"] : ["-47", "-54", "-61", "+61"];
-        else weights = ["Open"];
+        if (classe === "Esordienti") {
+            weights = (gender === "Maschio") ? ["-40", "-45", "-50", "-55", "+55"] : ["-42", "-47", "-52", "+52"];
+        } else if (classe === "Cadetti") {
+            weights = (gender === "Maschio") ? ["-52", "-57", "-63", "-70", "+70"] : ["-47", "-54", "-61", "+61"];
+        } else {
+            weights = ["Open"];
+        }
         weights.forEach(w => weightField.innerHTML += `<option value="${w}">${w} kg</option>`);
     } else if (specialty === "ParaKarate") {
         weightField.disabled = false;
         ["K10", "K21", "K22", "K30"].forEach(k => weightField.innerHTML += `<option value="${k}">${k}</option>`);
+    } else {
+        // Valore di default "N/A" per specialità senza peso
+        weightField.innerHTML = `<option value="-">-</option>`;
     }
 }
 
-// --- 3. CONTEGGI AGGIORNATI ---
+// --- 4. CONTEGGI E BLOCCO ISCRIZIONI ---
 async function updateAllCounters() {
-    // Kumite
-    const { count: countKumite } = await sb.from('atleti').select('*', { count: 'exact', head: true }).eq('specialty', 'Kumite');
-    document.getElementById('kumiteAthleteCountDisplay').textContent = `${100 - (countKumite || 0)} / 100`;
+    const { data: atleti } = await sb.from('atleti').select('specialty');
+    
+    const counts = {
+        kumite: atleti.filter(a => a.specialty === 'Kumite').length,
+        kata: atleti.filter(a => a.specialty === 'Kata').length,
+        para: atleti.filter(a => a.specialty === 'ParaKarate').length,
+        kids: atleti.filter(a => ["Percorso-Palloncino", "Percorso-Kata", "Palloncino"].includes(a.specialty)).length
+    };
 
-    // Kata
-    const { count: countKata } = await sb.from('atleti').select('*', { count: 'exact', head: true }).eq('specialty', 'Kata');
-    document.getElementById('kataAthleteCountDisplay').textContent = `${100 - (countKata || 0)} / 100`;
-
-    // Para
-    const { count: countPara } = await sb.from('atleti').select('*', { count: 'exact', head: true }).eq('specialty', 'ParaKarate');
-    document.getElementById('ParaKarateAthleteCountDisplay').textContent = `${50 - (countPara || 0)} / 50`;
-
-    // KIDS (Tutte le specialità percorso)
-    const { count: countKids } = await sb.from('atleti').select('*', { count: 'exact', head: true }).in('specialty', ["Percorso-Palloncino", "Percorso-Kata", "Palloncino"]);
-    document.getElementById('KIDSAthleteCountDisplay').textContent = `${100 - (countKids || 0)} / 100`;
+    document.getElementById('kumiteAthleteCountDisplay').textContent = `${LIMITI.Kumite - counts.kumite} / ${LIMITI.Kumite}`;
+    document.getElementById('kataAthleteCountDisplay').textContent = `${LIMITI.Kata - counts.kata} / ${LIMITI.Kata}`;
+    document.getElementById('ParaKarateAthleteCountDisplay').textContent = `${LIMITI.ParaKarate - counts.para} / ${LIMITI.ParaKarate}`;
+    document.getElementById('KIDSAthleteCountDisplay').textContent = `${LIMITI.KIDS - counts.kids} / ${LIMITI.KIDS}`;
+    
+    return counts;
 }
 
-// --- 4. SALVATAGGIO ---
+// --- 5. AGGIUNTA ATLETA (Validazione e Salvataggio) ---
 async function addAthlete(event) {
     event.preventDefault();
-    if (!currentSocietyId) return alert("Errore caricamento società.");
+    if (!currentSocietyId) return alert("Errore: Società non identificata.");
+
+    const spec = document.getElementById('specialty').value;
+    const counts = await updateAllCounters();
+    
+    // Controllo Limiti: Se superato, blocca l'invio
+    let limitReached = false;
+    if (spec === "Kumite" && counts.kumite >= LIMITI.Kumite) limitReached = true;
+    else if (spec === "Kata" && counts.kata >= LIMITI.Kata) limitReached = true;
+    else if (spec === "ParaKarate" && counts.para >= LIMITI.ParaKarate) limitReached = true;
+    else if (["Percorso-Palloncino", "Percorso-Kata", "Palloncino"].includes(spec) && counts.kids >= LIMITI.KIDS) limitReached = true;
+
+    if (limitReached) {
+        alert("ATTENZIONE: Posti esauriti per questa specialità!");
+        return;
+    }
 
     const athleteData = {
         first_name: document.getElementById('first_name').value,
@@ -96,21 +136,21 @@ async function addAthlete(event) {
         birthdate: document.getElementById('birthdate').value,
         belt: document.getElementById('belt').value,
         classe: document.getElementById('classe').value,
-        specialty: document.getElementById('specialty').value,
-        weight_category: document.getElementById('weightCategory').value || null,
+        specialty: spec,
+        weight_category: document.getElementById('weightCategory').value,
         society_id: currentSocietyId
     };
 
     const { error } = await sb.from('atleti').insert([athleteData]);
-    if (error) alert("Errore: " + error.message);
+    if (error) alert("Errore Supabase: " + error.message);
     else {
-        alert("Atleta salvato!");
+        alert("Atleta registrato correttamente!");
         document.getElementById('athleteForm').reset();
-        fetchAthletes(); // Ricarica tabella e conteggi
+        fetchAthletes();
     }
 }
 
-// --- 5. INIZIALIZZAZIONE ---
+// --- 6. VISUALIZZAZIONE TABELLA COMPLETA ---
 async function fetchAthletes() {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) return;
@@ -119,27 +159,42 @@ async function fetchAthletes() {
     if (society) {
         currentSocietyId = society.id;
         document.getElementById('societyNameDisplay').textContent = society.nome;
-        document.getElementById('society').value = society.nome;
         
         const { data: athletes } = await sb.from('atleti').select('*').eq('society_id', society.id);
         const list = document.getElementById('athleteList');
-        list.innerHTML = '';
-        athletes?.forEach(a => {
-            const row = list.insertRow();
-            row.innerHTML = `<td>${a.first_name} ${a.last_name}</td><td>${a.classe}</td><td>${a.specialty}</td><td>${a.belt}</td><td>${a.weight_category || '-'}</td><td><button class="btn btn-sm btn-danger" onclick="removeAthlete('${a.id}')">Elimina</button></td>`;
-        });
+        if (list) {
+            list.innerHTML = '';
+            athletes?.forEach(a => {
+                const row = list.insertRow();
+                row.innerHTML = `
+                    <td>${a.first_name}</td>
+                    <td>${a.last_name}</td>
+                    <td>${a.gender}</td>
+                    <td>${a.birthdate}</td>
+                    <td>${a.belt}</td>
+                    <td>${a.classe}</td>
+                    <td>${a.specialty}</td>
+                    <td>${a.weight_category || '-'}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="removeAthlete('${a.id}')">Elimina</button></td>
+                `;
+            });
+        }
     }
-    updateAllCounters();
+    await updateAllCounters();
 }
 
 async function removeAthlete(id) {
-    if (confirm("Eliminare l'atleta?")) {
+    if (confirm("Eliminare definitivamente questo atleta?")) {
         await sb.from('atleti').delete().eq('id', id);
         fetchAthletes();
     }
 }
 
+// --- 7. EVENTI ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchAthletes();
-    document.getElementById('athleteForm').addEventListener('submit', addAthlete);
+    document.getElementById('athleteForm')?.addEventListener('submit', addAthlete);
+    document.getElementById('birthdate')?.addEventListener('change', updateSpecialtyOptionsBasedOnBirthdate);
+    document.getElementById('specialty')?.addEventListener('change', toggleWeightCategory);
+    document.querySelectorAll('input[name="gender"]').forEach(r => r.addEventListener('change', toggleWeightCategory));
 });
