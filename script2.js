@@ -64,7 +64,7 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
             <option value="ParaKarate">ParaKarate</option>`;
     } else if (classe === "U6") {
         spSel.innerHTML = `
-            <option value="Combinata">Cobinata</option>
+            <option value="Combinata">Combinata</option>
             <option value="Kata">Kata</option>
             <option value="Kumite">Kumite</option>
             <option value="ParaKarate">ParaKarate</option>`;
