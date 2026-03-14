@@ -3,10 +3,10 @@ let currentSocietyId = null;
 
 // --- 1. LIMITI RIGIDI ---
 const LIMITI = {
-    "Kumite": 643,
-    "Kata": 145,
+    "Kumite": 400,
+    "Kata": 300,
     "ParaKarate": 50,
-    "KIDS": 225 // Somma di tutte le specialità KIDS
+    "KIDS": 250 // Somma di tutte le specialità KIDS
 };
 function updateSpecialtyOptionsBasedOnBirthdate() {
     const birthInput = document.getElementById("birthdate");
@@ -19,7 +19,7 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
     
     // Controlliamo se l'anno è completo (4 cifre) e fuori range
     if (year > 999) { // Evita il check finché l'utente sta scrivendo le prime cifre
-        if (year < 1960 || year > 2021) {
+        if (year < 2013 || year > 2022) {
             errorDisplay.style.display = "block"; // Mostra errore
             submitBtn.disabled = true;           // Blocca il tasto invio
             return; 
@@ -35,13 +35,14 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
     let classe = "";
 
     // Logica Classi Completa
-    if (year >= 2020 && year <= 2021) classe = "KIDS U6";
-    else if (year >= 2018 && year <= 2019) classe = "KIDS U8";
-    else if (year >= 2016 && year <= 2017) classe = "Fanciulli";
-    else if (year >= 2014 && year <= 2015) classe = "Ragazzi";
-    else if (year >= 2012 && year <= 2013) classe = "Esordienti";
-    else if (year >= 2010 && year <= 2011) classe = "Cadetti";
-    else if (year >= 1991 && year <= 2009) classe = "Seniores";
+    if (year >= 2021 && year <= 2022) classe = "U6";
+    else if (year >= 2019 && year <= 2020) classe = "U8";
+    else if (year >= 2017 && year <= 2018) classe = "U10";
+    else if (year >= 2015 && year <= 2016) classe = "U12";
+    else if (year >= 2013 && year <= 2014) classe = "U14";
+    else if (year >= 2011 && year <= 2012) classe = "Cadetti";
+    else if (year >= 2009 && year <= 2010) classe = "Juniores";
+    else if (year >= 1991 && year <= 2008) classe = "Seniores";
     else if (year >= 1960 && year <= 1990) classe = "Master";
 
     clSel.innerHTML = `<option value="${classe}">${classe}</option>`;
@@ -49,9 +50,9 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
     // Gestione Cinture con Accorpamenti (Nessuna opzione vuota)
     let belts = [];
     if (classe.includes("KIDS")) {
-        belts = ["Bianca", "Bianca/Gialla", "Gialla", "Gialla/Arancio"];
+        belts = ["Bianca/Gialla", "Arancio/Verde"];
     } else {
-        belts = ["Bianca/Gialla", "Gialla/Arancio", "Arancio/Verde", "Verde/Blu", "Blu/Marrone", "Marrone/Nera"];
+        belts = ["Bianca/Gialla", "Arancio/Verde", "Blu/Marrone"];
     }
     beltSel.innerHTML = belts.map(b => `<option value="${b}">${b}</option>`).join('');
 
@@ -61,11 +62,19 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
             <option value="Percorso-Kata">Percorso-Kata</option>
             <option value="Percorso-Palloncino">Percorso-Palloncino</option>
             <option value="ParaKarate">ParaKarate</option>`;
-    } else if (classe === "Fanciulli") {
+    } else if (classe === "U6") {
         spSel.innerHTML = `
+            <option value="Combinata">Cobinata</option>
             <option value="Kata">Kata</option>
-            <option value="Palloncino">Palloncino</option>
+            <option value="Kumite">Kumite</option>
             <option value="ParaKarate">ParaKarate</option>`;
+         } else if (classe === "U8") {
+        spSel.innerHTML = `
+            <option value="Combinata">Combinata</option>
+            <option value="Kata">Kata</option>
+            <option value="Kumite">Kumite</option>
+            <option value="ParaKarate">ParaKarate</option>`
+            ;
     } else {
         spSel.innerHTML = `
             <option value="Kata">Kata</option>
@@ -88,17 +97,23 @@ function toggleWeightCategory() {
     if (specialty === "Kumite") {
         weightField.disabled = false;
         let weights = [];
-        if (classe === "Esordienti") {
-            weights = (gender === "Maschio") ? ["-40", "-45", "-50", "-55", "+55"] : ["-42", "-47", "-52", "+52"];
-        } else if (classe === "Cadetti") {
-            weights = (gender === "Maschio") ? ["-52", "-57", "-63", "-70", "+70"] : ["-47", "-54", "-61", "+61"];
+        if (classe === "U14") {
+            weights = (gender === "Maschio") ? ["-40", "-45", "-50", "-55", "55+"] : ["-42", "-47", "-52", "52+"];
+        } else if (classe === "U12") {
+            weights = (gender === "Maschio") ? ["-30", "-35", "-40", "40+",] : ["-30", "-35", "35+"];
+             } else if (classe === "U10") {
+            weights = (gender === "Maschio") ? ["-30", "-35", "-40", "40+",] : ["-30", "-35", "35+"];
+             } else if (classe === "U8") {
+            weights = (gender === "Maschio") ? ["-30", "-35", "-40", "40+",] : ["-30", "-35", "35+"];
+             } else if (classe === "U6") {
+            weights = (gender === "Maschio") ? ["-30", "-35", "-40", "40+",] : ["-30", "-35", "35+"];
         } else {
             weights = ["Open"];
         }
         weights.forEach(w => weightField.innerHTML += `<option value="${w}">${w} kg</option>`);
     } else if (specialty === "ParaKarate") {
         weightField.disabled = false;
-        ["K10", "K21", "K22", "K30"].forEach(k => weightField.innerHTML += `<option value="${k}">${k}</option>`);
+        ["K10","K20", "K21", "K22", "K30", "K31", "K32", "K33", "K34", "K35", "K36", "K40"].forEach(k => weightField.innerHTML += `<option value="${k}">${k}</option>`);
     } else {
         // Valore di default "N/A" per specialità senza peso
         weightField.innerHTML = `<option value="-">-</option>`;
@@ -113,7 +128,7 @@ async function updateAllCounters() {
         kumite: atleti.filter(a => a.specialty === 'Kumite').length,
         kata: atleti.filter(a => a.specialty === 'Kata').length,
         para: atleti.filter(a => a.specialty === 'ParaKarate').length,
-        kids: atleti.filter(a => ["Percorso-Palloncino", "Percorso-Kata", "Palloncino"].includes(a.specialty)).length
+        kids: atleti.filter(a => ["Percorso-Palloncino", "Percorso-Kata", "Palloncino","Combinata"].includes(a.specialty)).length
     };
 
     document.getElementById('kumiteAthleteCountDisplay').textContent = `${LIMITI.Kumite - counts.kumite} / ${LIMITI.Kumite}`;
@@ -137,7 +152,7 @@ async function addAthlete(event) {
     if (spec === "Kumite" && counts.kumite >= LIMITI.Kumite) limitReached = true;
     else if (spec === "Kata" && counts.kata >= LIMITI.Kata) limitReached = true;
     else if (spec === "ParaKarate" && counts.para >= LIMITI.ParaKarate) limitReached = true;
-    else if (["Percorso-Palloncino", "Percorso-Kata", "Palloncino"].includes(spec) && counts.kids >= LIMITI.KIDS) limitReached = true;
+    else if (["Percorso-Palloncino", "Percorso-Kata", "Palloncino","Combinata"].includes(spec) && counts.kids >= LIMITI.KIDS) limitReached = true;
 
     if (limitReached) {
         alert("ATTENZIONE: Posti esauriti per questa specialità!");
