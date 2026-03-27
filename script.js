@@ -23,7 +23,7 @@ async function signIn(email, password) {
 }
 
 // Funzione di Registrazione
-async function signUp(email, password, nomeSocieta, cfs, cell) {
+async function signUp(email, password, nomeSocieta, cfs) {
     try {
         const { data, error } = await supabaseClient.auth.signUp({ email, password });
         if (error) throw error;
@@ -33,7 +33,6 @@ async function signUp(email, password, nomeSocieta, cfs, cell) {
                 nome: nomeSocieta, 
                 email: email, 
                 cfs: cfs, 
-                cell: cell,
                 user_id: data.user.id 
             }]);
             if (societaError) throw societaError;
@@ -74,8 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('email').value, 
                 document.getElementById('password').value, 
                 document.getElementById('nomeSocieta').value, 
-                document.getElementById('cfs').value,
-                document.getElementById('cell').value
+                document.getElementById('cfs').value
             );
         });
     }
