@@ -33,7 +33,7 @@ async function signUp(email, password, nomeSocieta, cfs, cell) {
                 nome: nomeSocieta, 
                 email: email, 
                 cfs: cfs, 
-                cell: cell
+                cell: cell,
                 user_id: data.user.id 
             }]);
             if (societaError) throw societaError;
