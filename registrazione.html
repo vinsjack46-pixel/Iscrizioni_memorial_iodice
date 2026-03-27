@@ -29,6 +29,9 @@
             
             <label for="cfs">Cellulare Tecnico:</label><br>
              <input type="numeric" id="cfs" maxlength="10" minlength="10"><br><br>
+            
+             <label for="cell">Codice Fiscale Societa:</label><br>
+             <input type="text" id="cell" maxlength="16" minlength="11"><br><br>
             <button type="submit">Registrati</button>
         </form>
         <p>Già registrato? <a href="login.html">Accedi</a></p>
@@ -36,29 +39,5 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
-    <script>
-        document.getElementById('updatePasswordForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (newPassword !== confirmPassword) {
-                alert('Le password non corrispondono!');
-                return;
-            }
-
-            // Usiamo window.supabaseClient come nel tuo script.js
-            const { error } = await window.supabaseClient.auth.updateUser({ 
-                password: newPassword 
-            });
-
-            if (error) {
-                alert("Errore durante l'aggiornamento: " + error.message);
-            } else {
-                alert("Password aggiornata! Ora verrai reindirizzato al login.");
-                window.location.href = 'login.html';
-            }
-        });
-    </script>
 </body>
 </html>
