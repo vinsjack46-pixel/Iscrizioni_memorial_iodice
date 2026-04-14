@@ -3,7 +3,7 @@ let currentSocietyId = null;
 
 // --- 1. LIMITI RIGIDI ---
 const LIMITI = {
-    "Kumite": 400,
+    "Kumite": 28,
     "Kata": 300,
     "ParaKarate": 50,
     "KIDS": 250 // Somma di tutte le specialità KIDS
