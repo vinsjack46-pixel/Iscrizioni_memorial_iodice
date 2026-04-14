@@ -9,6 +9,7 @@ const LIMITI = {
     "KIDS": 250 // Somma di tutte le specialità KIDS
 };
 
+// --- 2. LOGICA SELEZIONE (DATA DI NASCITA E CLASSI) ---
 function updateSpecialtyOptionsBasedOnBirthdate() {
     const birthInput = document.getElementById("birthdate");
     const errorDisplay = document.getElementById("dateError");
@@ -18,14 +19,15 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
 
     const year = new Date(birthInput.value).getFullYear();
     
-    if (year > 999) {
-        if (year < 1960 || year > 2022) { // Range esteso per includere Master
-            if(errorDisplay) errorDisplay.style.display = "block";
-            submitBtn.disabled = true;
+    // BLOCCO RIGIDO RIPRISTINATO (Versione 2)
+    if (year > 999) { 
+        if (year < 2013 || year > 2022) {
+            if(errorDisplay) errorDisplay.style.display = "block"; 
+            submitBtn.disabled = true;           
             return; 
         } else {
-            if(errorDisplay) errorDisplay.style.display = "none";
-            submitBtn.disabled = false;
+            if(errorDisplay) errorDisplay.style.display = "none";  
+            submitBtn.disabled = false;          
         }
     }
 
@@ -34,29 +36,31 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
     const beltSel = document.getElementById("belt");
     let classe = "";
 
+    // Logica Classi Versione 2
     if (year >= 2021 && year <= 2022) classe = "U6";
     else if (year >= 2019 && year <= 2020) classe = "U8";
     else if (year >= 2017 && year <= 2018) classe = "U10";
     else if (year >= 2015 && year <= 2016) classe = "U12";
     else if (year >= 2013 && year <= 2014) classe = "U14";
-    else if (year >= 2011 && year <= 2012) classe = "Cadetti";
-    else if (year >= 2009 && year <= 2010) classe = "Juniores";
-    else if (year >= 1991 && year <= 2008) classe = "Seniores";
-    else if (year >= 1960 && year <= 1990) classe = "Master";
 
     clSel.innerHTML = `<option value="${classe}">${classe}</option>`;
     
+    // Gestione Cinture Versione 2
     let belts = [];
-    if (["U6", "U8"].includes(classe)) {
+    if (["U6", "U8", "U10", "U12"].includes(classe)) {
         belts = ["Bianca/Gialla", "Arancio/Verde"];
-    } else if (["U10", "U12"].includes(classe)) {
-        belts = ["Bianca/Gialla", "Arancio/Verde", "Blu/Marrone"];
     } else {
-        belts = ["Bianca/Gialla", "Arancio/Verde", "Blu/Marrone", "Nera"];
+        belts = ["Bianca/Gialla", "Arancio/Verde", "Blu/Marrone"];
     }
     beltSel.innerHTML = belts.map(b => `<option value="${b}">${b}</option>`).join('');
 
-    if (["U6", "U8"].includes(classe)) {
+    // Logica Specialità Versione 2
+    if (["U10", "U12"].includes(classe)) {
+        spSel.innerHTML = `
+            <option value="Percorso-Kata">Percorso-Kata</option>
+            <option value="Percorso-Palloncino">Percorso-Palloncino</option>
+            <option value="ParaKarate">ParaKarate</option>`;
+    } else if (classe === "U6" || classe === "U8") {
         spSel.innerHTML = `
             <option value="Combinata">Combinata</option>
             <option value="Kata">Kata</option>
@@ -71,6 +75,7 @@ function updateSpecialtyOptionsBasedOnBirthdate() {
     toggleWeightCategory();
 }
 
+// --- 3. GESTIONE PESI (Versione 2) ---
 function toggleWeightCategory() {
     const specialty = document.getElementById("specialty").value;
     const classe = document.getElementById("classe")?.value;
@@ -86,7 +91,7 @@ function toggleWeightCategory() {
         if (classe === "U14") {
             weights = (gender === "Maschio") ? ["-40", "-45", "-50", "-55", "55+"] : ["-42", "-47", "-52", "52+"];
         } else if (["U12", "U10", "U8", "U6"].includes(classe)) {
-            weights = (gender === "Maschio") ? ["-30", "-35", "-40", "40+",] : ["-30", "-35", "35+"];
+            weights = (gender === "Maschio") ? ["-30", "-35", "-40", "40+"] : ["-30", "-35", "35+"];
         } else {
             weights = ["Open"];
         }
@@ -99,55 +104,47 @@ function toggleWeightCategory() {
     }
 }
 
-// --- 4. CONTEGGI PRIVATI E BLOCCO GLOBALE (MODIFICATO) ---
+// --- 4. CONTEGGI PRIVATI E LOGICA GLOBALE ---
 async function updateAllCounters() {
-    // Recupero dati globali per il blocco iscrizioni
     const { data: globalAthletes } = await sb.from('atleti').select('specialty');
-    
-    // Recupero dati della società per la visualizzazione UI
-    const { data: socAthletes } = await sb.from('atleti')
-        .select('specialty')
-        .eq('society_id', currentSocietyId);
+    const { data: socAthletes } = await sb.from('atleti').select('specialty').eq('society_id', currentSocietyId);
 
-    const globalCounts = {
+    const gCount = {
         kumite: globalAthletes?.filter(a => a.specialty === 'Kumite').length || 0,
         kata: globalAthletes?.filter(a => a.specialty === 'Kata').length || 0,
         para: globalAthletes?.filter(a => a.specialty === 'ParaKarate').length || 0,
-        kids: globalAthletes?.filter(a => ["Combinata"].includes(a.specialty)).length || 0
+        kids: globalAthletes?.filter(a => ["Percorso-Palloncino", "Percorso-Kata", "Palloncino","Combinata"].includes(a.specialty)).length || 0
     };
 
-    const socCounts = {
+    const sCount = {
         kumite: socAthletes?.filter(a => a.specialty === 'Kumite').length || 0,
         kata: socAthletes?.filter(a => a.specialty === 'Kata').length || 0,
         para: socAthletes?.filter(a => a.specialty === 'ParaKarate').length || 0,
-        kids: socAthletes?.filter(a => ["Combinata"].includes(a.specialty)).length || 0
+        kids: socAthletes?.filter(a => ["Percorso-Palloncino", "Percorso-Kata", "Palloncino","Combinata"].includes(a.specialty)).length || 0
     };
 
-    // UI: Mostriamo solo il numero della propria società
-    document.getElementById('kumiteAthleteCountDisplay').textContent = socCounts.kumite;
-    document.getElementById('kataAthleteCountDisplay').textContent = socCounts.kata;
-    document.getElementById('ParaKarateAthleteCountDisplay').textContent = socCounts.para;
-    document.getElementById('KIDSAthleteCountDisplay').textContent = socCounts.kids;
+    // Aggiornamento UI (Solo società)
+    document.getElementById('kumiteAthleteCountDisplay').textContent = sCount.kumite;
+    document.getElementById('kataAthleteCountDisplay').textContent = sCount.kata;
+    document.getElementById('ParaKarateAthleteCountDisplay').textContent = sCount.para;
+    document.getElementById('KIDSAthleteCountDisplay').textContent = sCount.kids;
     
-    // Ritorniamo i globali per la funzione addAthlete
-    return globalCounts;
+    return gCount;
 }
 
-// --- 5. AGGIUNTA ATLETA (MODIFICATO) ---
+// --- 5. AGGIUNTA ATLETA ---
 async function addAthlete(event) {
     event.preventDefault();
     if (!currentSocietyId) return alert("Errore: Società non identificata.");
 
     const spec = document.getElementById('specialty').value;
-    
-    // Riceviamo i conteggi GLOBALI per validare
-    const counts = await updateAllCounters();
+    const counts = await updateAllCounters(); // Prende i globali per il blocco
     
     let limitReached = false;
     if (spec === "Kumite" && counts.kumite >= LIMITI.Kumite) limitReached = true;
     else if (spec === "Kata" && counts.kata >= LIMITI.Kata) limitReached = true;
     else if (spec === "ParaKarate" && counts.para >= LIMITI.ParaKarate) limitReached = true;
-    else if (["Combinata"].includes(spec) && counts.kids >= LIMITI.KIDS) limitReached = true;
+    else if (["Percorso-Palloncino", "Percorso-Kata", "Palloncino","Combinata"].includes(spec) && counts.kids >= LIMITI.KIDS) limitReached = true;
 
     if (limitReached) {
         alert("ATTENZIONE: Posti totali dell'evento esauriti per questa specialità!");
@@ -167,7 +164,7 @@ async function addAthlete(event) {
     };
 
     const { error } = await sb.from('atleti').insert([athleteData]);
-    if (error) alert("Errore: " + error.message);
+    if (error) alert("Errore Supabase: " + error.message);
     else {
         alert("Atleta registrato correttamente!");
         document.getElementById('athleteForm').reset();
@@ -175,7 +172,7 @@ async function addAthlete(event) {
     }
 }
 
-// --- 6. VISUALIZZAZIONE TABELLA ---
+// --- 6. TABELLA E INIZIALIZZAZIONE ---
 async function fetchAthletes() {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) return;
@@ -213,7 +210,6 @@ async function removeAthlete(id) {
     }
 }
 
-// --- 7. EVENTI ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchAthletes();
     document.getElementById('athleteForm')?.addEventListener('submit', addAthlete);
