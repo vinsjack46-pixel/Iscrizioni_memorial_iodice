@@ -1,4 +1,4 @@
-const sb = window.supabaseClient;
+ const sb = window.supabaseClient;
 let currentSocietyId = null;
 
 // --- 1. LIMITI RIGIDI ---
