@@ -3,7 +3,7 @@ let currentSocietyId = null;
 
 // --- 1. LIMITI RIGIDI ---
 const LIMITI = {
-    "Kumite": 28,
+    "Kumite": 400,
     "Kata": 300,
     "ParaKarate": 50,
     "KIDS": 250 
