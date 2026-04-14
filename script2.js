@@ -6,7 +6,7 @@ const LIMITI = {
     "Kumite": 28,
     "Kata": 300,
     "ParaKarate": 50,
-    "KIDS": 250 // Somma di tutte le specialità KIDS
+    "KIDS": 250 
 };
 
 function updateSpecialtyOptionsBasedOnBirthdate() {
@@ -95,13 +95,7 @@ function toggleWeightCategory() {
         let weights = [];
         if (classe === "U14") {
             weights = (gender === "Maschio") ? ["-40", "-45", "-50", "-55", "55+"] : ["-42", "-47", "-52", "52+"];
-        } else if (classe === "U12") {
-            weights = (gender === "Maschio") ? ["-30", "-35", "-40", "40+",] : ["-30", "-35", "35+"];
-             } else if (classe === "U10") {
-            weights = (gender === "Maschio") ? ["-30", "-35", "-40", "40+",] : ["-30", "-35", "35+"];
-             } else if (classe === "U8") {
-            weights = (gender === "Maschio") ? ["-30", "-35", "-40", "40+",] : ["-30", "-35", "35+"];
-             } else if (classe === "U6") {
+        } else if (classe === "U12" || classe === "U10" || classe === "U8" || classe === "U6") {
             weights = (gender === "Maschio") ? ["-30", "-35", "-40", "40+",] : ["-30", "-35", "35+"];
         } else {
             weights = ["Open"];
@@ -118,10 +112,12 @@ function toggleWeightCategory() {
 // --- 4. CONTEGGI PRIVATI E BLOCCO GLOBALE ---
 async function updateAllCounters() {
     // Carica TUTTI gli atleti per il controllo limiti
-    const { data: allAtleti } = await sb.from('atleti').select('specialty');
+    const { data: allAtleti, error: err1 } = await sb.from('atleti').select('specialty'); // <--- MODIFICA: Aggiunto controllo errore
     // Carica solo quelli della SOCIETÀ per il display
-    const { data: myAtleti } = await sb.from('atleti').select('specialty').eq('society_id', currentSocietyId);
+    const { data: myAtleti, error: err2 } = await sb.from('atleti').select('specialty').eq('society_id', currentSocietyId);
     
+    if (err1 || err2) return { kumite: 0, kata: 0, para: 0, kids: 0 }; // <--- MODIFICA: Fallback di sicurezza
+
     const globalCounts = {
         kumite: allAtleti.filter(a => a.specialty === 'Kumite').length,
         kata: allAtleti.filter(a => a.specialty === 'Kata').length,
@@ -136,13 +132,12 @@ async function updateAllCounters() {
         kids: myAtleti.filter(a => ["Percorso-Palloncino", "Percorso-Kata", "Palloncino","Combinata"].includes(a.specialty)).length
     };
 
-    // Visualizza solo i numeri della società
     document.getElementById('kumiteAthleteCountDisplay').textContent = myCounts.kumite;
     document.getElementById('kataAthleteCountDisplay').textContent = myCounts.kata;
     document.getElementById('ParaKarateAthleteCountDisplay').textContent = myCounts.para;
     document.getElementById('KIDSAthleteCountDisplay').textContent = myCounts.kids;
     
-    return globalCounts; // Restituisce il totale generale per la funzione addAthlete
+    return globalCounts; 
 }
 
 // --- 5. AGGIUNTA ATLETA ---
@@ -150,10 +145,15 @@ async function addAthlete(event) {
     event.preventDefault();
     if (!currentSocietyId) return alert("Errore: Società non identificata.");
 
+    // <--- MODIFICA: Disabilita tasto durante il controllo per evitare doppie sottomissioni
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
     const spec = document.getElementById('specialty').value;
-    const counts = await updateAllCounters(); // Prende i conteggi globali
+    const counts = await updateAllCounters(); 
     
     let limitReached = false;
+    // <--- MODIFICA: Controllo più rigoroso sui limiti
     if (spec === "Kumite" && counts.kumite >= LIMITI.Kumite) limitReached = true;
     else if (spec === "Kata" && counts.kata >= LIMITI.Kata) limitReached = true;
     else if (spec === "ParaKarate" && counts.para >= LIMITI.ParaKarate) limitReached = true;
@@ -161,6 +161,7 @@ async function addAthlete(event) {
 
     if (limitReached) {
         alert("ATTENZIONE: Posti esauriti nell'evento per questa specialità!");
+        submitBtn.disabled = false; // <--- MODIFICA: Riabilita se bloccato
         return;
     }
 
@@ -177,16 +178,22 @@ async function addAthlete(event) {
     };
 
     const { error } = await sb.from('atleti').insert([athleteData]);
-    if (error) alert("Errore Supabase: " + error.message);
-    else {
+    
+    if (error) {
+        alert("Errore Supabase: " + error.message);
+        submitBtn.disabled = false;
+    } else {
         alert("Atleta registrato correttamente!");
-        // Reset completo di tutte le caselle
-        document.getElementById('athleteForm').reset();
+        // <--- MODIFICA: Reset manuale forzato per caselle bianche
+        event.target.reset();
         document.getElementById('classe').innerHTML = '<option value="">-- Classe --</option>';
         document.getElementById('specialty').innerHTML = '<option value="">-- Specialità --</option>';
         document.getElementById('belt').innerHTML = '<option value="">-- Cintura --</option>';
         document.getElementById('weightCategory').innerHTML = '<option value="-">-</option>';
-        fetchAthletes();
+        document.getElementById('weightCategory').disabled = true;
+        
+        await fetchAthletes();
+        submitBtn.disabled = false;
     }
 }
 
@@ -208,11 +215,11 @@ async function fetchAthletes() {
                 const row = list.insertRow();
                 row.innerHTML = `
                     <td>${a.first_name} ${a.last_name}</td>
-                  <td>${a.classe}</td>
-                  <td>${a.specialty}</td>
-                   <td>${a.belt}</td>
+                    <td>${a.classe}</td>
+                    <td>${a.specialty}</td>
+                    <td>${a.belt}</td>
                     <td>${a.gender}</td>
-                   <td>${a.weight_category || '-'}</td>
+                    <td>${a.weight_category || '-'}</td>
                     <td><button class="btn btn-danger btn-sm" onclick="removeAthlete('${a.id}')">Elimina</button></td>
                 `;
             });
@@ -224,11 +231,10 @@ async function fetchAthletes() {
 async function removeAthlete(id) {
     if (confirm("Eliminare definitivamente questo atleta?")) {
         await sb.from('atleti').delete().eq('id', id);
-        fetchAthletes();
+        await fetchAthletes(); // <--- MODIFICA: Aggiunto await per precisione conteggi
     }
 }
 
-// --- 7. EVENTI ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchAthletes();
     document.getElementById('athleteForm')?.addEventListener('submit', addAthlete);
