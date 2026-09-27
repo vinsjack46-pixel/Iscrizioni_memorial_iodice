@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Evento | Gestione Gare</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar-custom {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px 20px;
+        }
+        .main-container {
+            padding: 30px 20px;
+        }
+        .card-custom {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: white;
+            padding: 24px;
+        }
+        .sort-header {
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            transition: background-color 0.2s;
+        }
+        .sort-header:hover {
+            background-color: rgba(0,0,0,0.03);
+        }
+        .search-box {
+            position: relative;
+            max-width: 400px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        .search-box input {
+            padding-left: 36px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar con Navigazione e Selettore Evento -->
+    <nav class="navbar-custom d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <a href="scelta-evento.html" class="btn btn-outline-secondary btn-sm fw-bold">
+                <i class="fas fa-arrow-left me-1"></i>Torna a Scelta Evento
+            </a>
+            <h4 class="mb-0 fw-bold text-dark" id="titoloPagina">Report Evento</h4>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            <label for="eventSelector" class="fw-bold text-dark mb-0 small">Seleziona Evento:</label>
+            <select id="eventSelector" class="form-select form-select-sm" style="min-width: 220px;">
+                <option value="">Caricamento eventi...</option>
+            </select>
+        </div>
+    </nav>
+
+    <!-- Contenuto Principale Report -->
+    <div class="container-fluid main-container">
+        <div class="card-custom">
+            <div id="reportContent">
+                <p class="text-muted text-center py-4">Seleziona un evento dal menu in alto per visualizzare i dettagli.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+    <script>
+        // Stato Globale per Filtraggio e Ordinamento
+        let atletiGaraData = [];
+        let sortColonnaCorrente = 'fullName';
+        let sortAscendente = true;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const client = window.supabaseClient || window.sb || window.supabase;
+            if (!client) {
+                alert("Errore di connessione a Supabase.");
+                return;
+            }
+
+            // 1. Verifica utente connesso
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const userEmail = (user.email || '').toLowerCase().trim();
+            const authorizedAdmins = ["vinsjack46@gmail.com", "19vincenzo89@gmail.com"];
+            const isAdmin = authorizedAdmins.includes(userEmail);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            let currentEventId = urlParams.get('event_id');
+            let eventi = [];
+
+            // 2. Caricamento Eventi con Filtro Permessi Rigido
+            try {
+                if (isAdmin) {
+                    const { data, error } = await client.from('eventi').select('*');
+                    if (error) throw error;
+                    eventi = data || [];
+                } else {
+                    const { data: permessi, error: errPermessi } = await client
+                        .from('permessi_eventi')
+                        .select('event_id')
+                        .ilike('user_email', userEmail);
+
+                    if (errPermessi) throw errPermessi;
+
+                    const allowedIds = permessi ? permessi.map(p => p.event_id) : [];
+
+                    if (allowedIds.length === 0) {
+                        alert("Non disponi dei permessi per visualizzare i report di alcun evento.");
+                        window.location.href = 'scelta-evento.html';
+                        return;
+                    }
+
+                    const { data, error } = await client
+                        .from('eventi')
+                        .select('*')
+                        .in('id', allowedIds);
+
+                    if (error) throw error;
+                    eventi = data || [];
+                }
+            } catch (err) {
+                console.error("Errore recupero eventi:", err);
+                alert("Si è verificato un errore durante il recupero degli eventi.");
+                window.location.href = 'scelta-evento.html';
+                return;
+            }
+
+            if (eventi.length === 0) {
+                alert("Nessun evento disponibile.");
+                window.location.href = 'scelta-evento.html';
+                return;
+            }
+
+            // 3. Selezione evento attivo
+            if (!currentEventId || !eventi.some(e => String(e.id) === String(currentEventId))) {
+                currentEventId = eventi[0].id;
+            }
+
+            // 4. Popolamento Selettore Eventi
+            const select = document.getElementById('eventSelector');
+            if (select) {
+                select.innerHTML = '';
+                eventi.forEach(ev => {
+                    const opt = document.createElement('option');
+                    opt.value = ev.id;
+                    opt.textContent = ev.nome || ev.titolo || ev.nome_evento || `Evento #${ev.id}`;
+                    if (String(ev.id) === String(currentEventId)) {
+                        opt.selected = true;
+                    }
+                    select.appendChild(opt);
+                });
+
+                select.addEventListener('change', (e) => {
+                    const selectedId = e.target.value;
+                    if (selectedId) {
+                        window.location.href = `report-evento.html?event_id=${selectedId}`;
+                    }
+                });
+            }
+
+            // 5. Invocazione caricamento dati report
+            caricaDatiReport(currentEventId);
+        });
+
+        // Carica dati atleti e società per l'evento selezionato
+        async function caricaDatiReport(eventId) {
+            const container = document.getElementById('reportContent');
+            if (!container) return;
+
+            container.innerHTML = `<div class="text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span>Caricamento dati report in corso...</div>`;
+
+            const client = window.supabaseClient || window.sb || window.supabase;
+            
+            try {
+                // Recupero atleti e lista società in parallelo per mappare i nomi società
+                const [resAtleti, resSocieta] = await Promise.all([
+                    client.from('atleti').select('*').eq('event_id', eventId),
+                    client.from('societa').select('id, nome')
+                ]);
+
+                if (resAtleti.error) throw resAtleti.error;
+
+                const atletiRaw = resAtleti.data || [];
+                const socMap = {};
+
+                if (resSocieta.data) {
+                    resSocieta.data.forEach(s => {
+                        socMap[s.id] = s.nome;
+                    });
+                }
+
+                if (atletiRaw.length === 0) {
+                    container.innerHTML = `<div class="alert alert-info text-center">Nessun atleta o squadra presente per questo evento.</div>`;
+                    return;
+                }
+
+                // Normalizzazione dati per ricerca e ordinamento agevoli
+                atletiGaraData = atletiRaw.map(a => {
+                    const cognome = (a.last_name || '').trim();
+                    const nome = (a.first_name || '').trim();
+                    const nomeCompleto = `${cognome} ${nome}`.trim() || 'Senza Nome';
+                    
+                    let sessoFormatted = a.gender || '-';
+                    if (a.gender === 'M' || a.gender === 'Maschio') sessoFormatted = 'Maschio';
+                    if (a.gender === 'F' || a.gender === 'Femmina') sessoFormatted = 'Femmina';
+
+                    const nomeSocieta = a.societa || a.nome_societa || socMap[a.society_id] || socMap[a.societa_id] || '-';
+
+                    return {
+                        id: a.id,
+                        fullName: nomeCompleto,
+                        societa: nomeSocieta,
+                        classe: a.classe || '-',
+                        sesso: sessoFormatted,
+                        specialty: a.specialty || '-',
+                        weightCategory: a.weight_category || '-'
+                    };
+                });
+
+                // Rendering dell'interfaccia con Barra di Ricerca e Tabella Ordinabile
+                renderInterfacciaReport();
+
+            } catch (err) {
+                console.error("Errore caricamento report:", err);
+                container.innerHTML = `<div class="alert alert-danger">Errore nel caricamento del report: ${err.message || err}</div>`;
+            }
+        }
+
+        // Costruisce la struttura HTML con la barra di ricerca
+        function renderInterfacciaReport() {
+            const container = document.getElementById('reportContent');
+            
+            container.innerHTML = `
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1">Riepilogo Iscritti</h5>
+                        <span class="badge bg-primary rounded-pill" id="badgeCount">Totale: ${atletiGaraData.length}</span>
+                    </div>
+
+                    <!-- Barra di Ricerca Unica -->
+                    <div class="search-box w-100">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Cerca per Atleta, Società, Classe, Categoria...">
+                    </div>
+                </div>
+
+                <!-- Tabella Dati -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="sort-header" onclick="ordinaPer('fullName')">
+                                    Atleta / Squadra <i class="fas fa-sort ms-1 text-muted" id="sort-fullName"></i>
+                                </th>
+                                <th class="sort-header" onclick="ordinaPer('societa')">
+                                    Società <i class="fas fa-sort ms-1 text-muted" id="sort-societa"></i>
+                                </th>
+                                <th class="sort-header" onclick="ordinaPer('classe')">
+                                    Classe <i class="fas fa-sort ms-1 text-muted" id="sort-classe"></i>
+                                </th>
+                                <th class="sort-header" onclick="ordinaPer('sesso')">
+                                    Sesso <i class="fas fa-sort ms-1 text-muted" id="sort-sesso"></i>
+                                </th>
+                                <th class="sort-header" onclick="ordinaPer('specialty')">
+                                    Specialità <i class="fas fa-sort ms-1 text-muted" id="sort-specialty"></i>
+                                </th>
+                                <th class="sort-header" onclick="ordinaPer('weightCategory')">
+                                    Categoria <i class="fas fa-sort ms-1 text-muted" id="sort-weightCategory"></i>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyAtleti">
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Listener per la ricerca in tempo reale
+            document.getElementById('searchInput').addEventListener('input', aggiornaTabella);
+
+            // Primo popolamento tabella (con ordinamento di default)
+            aggiornaTabella();
+        }
+
+        // Funzione per gestire l'ordinamento al click sull'intestazione di colonna
+        function ordinaPer(colonna) {
+            if (sortColonnaCorrente === colonna) {
+                sortAscendente = !sortAscendente;
+            } else {
+                sortColonnaCorrente = colonna;
+                sortAscendente = true;
+            }
+            aggiornaTabella();
+        }
+
+        // Filtra, ordina e renderizza le righe della tabella
+        function aggiornaTabella() {
+            const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+
+            // 1. Filtraggio globale su tutti i campi visibili
+            let atletiFiltrati = atletiGaraData.filter(item => {
+                if (!query) return true;
+                return (
+                    item.fullName.toLowerCase().includes(query) ||
+                    item.societa.toLowerCase().includes(query) ||
+                    item.classe.toLowerCase().includes(query) ||
+                    item.sesso.toLowerCase().includes(query) ||
+                    item.specialty.toLowerCase().includes(query) ||
+                    item.weightCategory.toLowerCase().includes(query)
+                );
+            });
+
+            // 2. Ordinamento Alfabetico
+            atletiFiltrati.sort((a, b) => {
+                const valA = (a[sortColonnaCorrente] || '').toString().toLowerCase();
+                const valB = (b[sortColonnaCorrente] || '').toString().toLowerCase();
+                
+                const comp = valA.localeCompare(valB, 'it', { numeric: true, sensitivity: 'base' });
+                return sortAscendente ? comp : -comp;
+            });
+
+            // 3. Aggiornamento Icone di Ordinamento
+            ['fullName', 'societa', 'classe', 'sesso', 'specialty', 'weightCategory'].forEach(col => {
+                const icon = document.getElementById(`sort-${col}`);
+                if (icon) {
+                    if (col === sortColonnaCorrente) {
+                        icon.className = sortAscendente ? 'fas fa-sort-up ms-1 text-primary' : 'fas fa-sort-down ms-1 text-primary';
+                    } else {
+                        icon.className = 'fas fa-sort ms-1 text-muted';
+                    }
+                }
+            });
+
+            // 4. Aggiornamento Badge Contatore
+            const badge = document.getElementById('badgeCount');
+            if (badge) {
+                badge.textContent = `Mostrati: ${atletiFiltrati.length} di ${atletiGaraData.length}`;
+            }
+
+            // 5. Generazione HTML Righe
+            const tbody = document.getElementById('tbodyAtleti');
+            if (!tbody) return;
+
+            if (atletiFiltrati.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Nessun iscritto corrisponde alla ricerca.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = atletiFiltrati.map(a => `
+                <tr>
+                    <td><strong>${a.fullName}</strong></td>
+                    <td><span class="badge bg-light text-dark border">${a.societa}</span></td>
+                    <td>${a.classe}</td>
+                    <td>${a.sesso}</td>
+                    <td>${a.specialty}</td>
+                    <td>${a.weightCategory}</td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
