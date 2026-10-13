@@ -1,7 +1,7 @@
 // ==========================================================================
 // SCRIPT.JS - ARCHITETTURA SEPARATA (atleti / teams) con Apertura Tab Automatica
 // ==========================================================================
-
+ 
 if (!window.supabase) {
     console.error("Supabase CDN non caricato! Verifica l'ordine degli script nell'HTML.");
 }
