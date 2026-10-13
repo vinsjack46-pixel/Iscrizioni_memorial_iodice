@@ -71,7 +71,7 @@ async function caricaListaEventi() {
             let htmlDest = "index-judo.html";
             if (sportId === "karate") { badgeColor = "bg-danger"; htmlDest = "index-karate.html"; }
             if (sportId === "fitarco") { badgeColor = "bg-success text-white"; htmlDest = "index-fitarco.html"; }
-            if (sportId === "KARATE_KATA") { badgeColor = "bg-danger"; htmlDest = "index-KARATE_KATA.html"; }
+            if (sportId === "karate_kata") { badgeColor = "bg-danger"; htmlDest = "index-karate_kata.html"; }
             if (sportId === "2026_coppa_italia_opes") { badgeColor = "bg-danger"; htmlDest = "index-2026_coppa_italia_opes.html"; }
 
             const card = document.createElement('div');
