@@ -74,10 +74,10 @@ async function caricaListaEventi() {
             if (sportId === "karate_kata") { badgeColor = "bg-danger"; htmlDest = "index-karate_kata.html"; }
             if (sportId === "2026_coppa_italia_opes") { badgeColor = "bg-danger"; htmlDest = "index-2026_coppa_italia_opes.html"; }
 
-            // Genera l'HTML della locandina con formato A4 verticale forzato
+            // Genera l'HTML della locandina con formato A4 verticale
             const posterHtml = ev.locandina_url 
-                ? `<div style="background-color: #f1f3f5; width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden;">
-                       <img src="${ev.locandina_url}" class="card-img-top" style="width: 100%; aspect-ratio: 1 / 1.414; object-fit: cover;" alt="Locandina Evento">
+                ? `<div class="mt-3" style="background-color: #f1f3f5; width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; border-radius: 8px;">
+                       <img src="${ev.locandina_url}" class="img-fluid" style="width: 100%; aspect-ratio: 1 / 1.414; object-fit: cover;" alt="Locandina Evento">
                    </div>` 
                 : '';
 
@@ -85,14 +85,14 @@ async function caricaListaEventi() {
             card.className = "col-md-6 col-lg-4 mb-4";
             card.innerHTML = `
                 <div class="card h-100 shadow-sm border-0" style="cursor:pointer;" onclick="selezionaEvento('${ev.id}', '${htmlDest}', '${sportId}', '${ev.titolo || ev.nome}')">
-                    ${posterHtml}
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="badge ${badgeColor} text-uppercase fw-bold">${sportId}</span>
                             <small class="text-muted"><i class="fas fa-calendar-alt me-1"></i> ${dataGara}</small>
                         </div>
                         <h5 class="card-title fw-bold text-dark mb-1">${ev.titolo || ev.nome}</h5>
-                        <p class="card-text text-muted small flex-grow-1"><i class="fas fa-map-marker-alt me-1"></i> ${ev.luogo || 'Sede da definire'}</p>
+                        <p class="card-text text-muted small flex-grow-1 mb-0"><i class="fas fa-map-marker-alt me-1"></i> ${ev.luogo || 'Sede da definire'}</p>
+                        ${posterHtml}
                         <button class="btn btn-outline-primary btn-sm w-100 fw-bold mt-3">Gestisci Iscrizioni <i class="fas fa-arrow-right ms-1"></i></button>
                     </div>
                 </div>
