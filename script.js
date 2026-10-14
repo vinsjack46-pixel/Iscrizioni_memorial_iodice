@@ -1,7 +1,7 @@
 // ==========================================================================
 // SCRIPT.JS - ARCHITETTURA SEPARATA (atleti / teams) con Apertura Tab Automatica
 // ==========================================================================
- 
+
 if (!window.supabase) {
     console.error("Supabase CDN non caricato! Verifica l'ordine degli script nell'HTML.");
 }
@@ -71,13 +71,19 @@ async function caricaListaEventi() {
             let htmlDest = "index-judo.html";
             if (sportId === "karate") { badgeColor = "bg-danger"; htmlDest = "index-karate.html"; }
             if (sportId === "fitarco") { badgeColor = "bg-success text-white"; htmlDest = "index-fitarco.html"; }
-            if (sportId === "karate_kata") { badgeColor = "bg-danger"; htmlDest = "index-karate_kata.html"; }
+            if (sportId === "karate_fijlkam") { badgeColor = "bg-danger"; htmlDest = "index-karate_fijlkam.html"; }
             if (sportId === "2026_coppa_italia_opes") { badgeColor = "bg-danger"; htmlDest = "index-2026_coppa_italia_opes.html"; }
+
+            // Genera l'HTML della locandina se presente nel database
+            const posterHtml = ev.locandina_url 
+                ? `<img src="${ev.locandina_url}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="Locandina Evento">` 
+                : '';
 
             const card = document.createElement('div');
             card.className = "col-md-6 col-lg-4 mb-4";
             card.innerHTML = `
                 <div class="card h-100 shadow-sm border-0" style="cursor:pointer;" onclick="selezionaEvento('${ev.id}', '${htmlDest}', '${sportId}', '${ev.titolo || ev.nome}')">
+                    ${posterHtml}
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="badge ${badgeColor} text-uppercase fw-bold">${sportId}</span>
@@ -146,7 +152,7 @@ async function initDashboardSemplice() {
                 targetSocietaIDs.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.innerText = "Società: " + soc.nome;
-                });fi
+                });
             }
         } else {
             return window.location.href = "login.html";
@@ -160,7 +166,7 @@ async function initDashboardSemplice() {
             if (sportId === 'fitarco' && document.getElementById('regSpecialty')) {
                 const sel = document.getElementById('regSpecialty');
                 sel.innerHTML = '<option value="" disabled selected>-- Seleziona Divisione --</option>';
-                config.regoles?.divisioni?.forEach(d => sel.innerHTML += `<option value="${d}">${d}</option>`);
+                config.regole?.divisioni?.forEach(d => sel.innerHTML += `<option value="${d}">${d}</option>`);
             }
         }
     } catch (e) { console.error(e); }
