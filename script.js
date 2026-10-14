@@ -74,9 +74,11 @@ async function caricaListaEventi() {
             if (sportId === "karate_kata") { badgeColor = "bg-danger"; htmlDest = "index-karate_kata.html"; }
             if (sportId === "2026_coppa_italia_opes") { badgeColor = "bg-danger"; htmlDest = "index-2026_coppa_italia_opes.html"; }
 
-            // Genera l'HTML della locandina se presente nel database
+            // Genera l'HTML della locandina con formato A4 verticale forzato
             const posterHtml = ev.locandina_url 
-                ? `<img src="${ev.locandina_url}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="Locandina Evento">` 
+                ? `<div style="background-color: #f1f3f5; width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                       <img src="${ev.locandina_url}" class="card-img-top" style="width: 100%; aspect-ratio: 1 / 1.414; object-fit: cover;" alt="Locandina Evento">
+                   </div>` 
                 : '';
 
             const card = document.createElement('div');
