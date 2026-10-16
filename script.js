@@ -732,7 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formLogin.addEventListener('submit', (e) => { e.preventDefault(); signIn(document.getElementById('email').value, document.getElementById('password').value); });
     }
     if (formRegSoc) {
-        formRegSoc.addEventListener('submit', (e) => { e.preventDefault(); signUp(document.getElementById('email'].value, document.getElementById('password').value, document.getElementById('nomeSocieta').value, document.getElementById('cfs').value, document.getElementById('cell').value); });
+        formRegSoc.addEventListener('submit', (e) => { e.preventDefault(); signUp(document.getElementById('email').value, document.getElementById('password').value, document.getElementById('nomeSocieta').value, document.getElementById('cfs').value, document.getElementById('cell').value); });
     }
     if (containerScelta) {
         caricaListaEventi();
