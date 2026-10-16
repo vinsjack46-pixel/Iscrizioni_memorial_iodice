@@ -71,7 +71,7 @@ async function caricaListaEventi() {
             let htmlDest = "index-judo.html";
             if (sportId === "karate") { badgeColor = "bg-danger"; htmlDest = "index-karate.html"; }
             if (sportId === "fitarco") { badgeColor = "bg-success text-white"; htmlDest = "index-fitarco.html"; }
-            if (sportId === "karate_kata") { badgeColor = "bg-danger"; htmlDest = "index-karate_kata.html"; }
+            if (sportId === "karate_fijlkam") { badgeColor = "bg-danger"; htmlDest = "index-karate_fijlkam.html"; }
             if (sportId === "2026_coppa_italia_opes") { badgeColor = "bg-danger"; htmlDest = "index-2026_coppa_italia_opes.html"; }
 
             // Genera l'HTML della locandina con formato A4 verticale
@@ -577,6 +577,150 @@ window.eliminaSquadra = async function(idTeam) {
     } catch (err) { alert("Errore di eliminazione: " + err.message); }
 };
 
+// --- 6C. ESPORTAZIONE PDF ISCRITTI SOCIETÀ ---
+window.esportaPDFIscrizioni = async function() {
+    if (!idGaraCorrente || !idSocietaCorrente) {
+        return alert("Dati di sessione non disponibili per l'esportazione.");
+    }
+
+    const btn = event?.target?.closest('button') || document.getElementById('btnExportPdf');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Generazione PDF...';
+
+    try {
+        // Carica dinamicamente jsPDF e AutoTable se non presenti
+        if (!window.jspdf) {
+            await caricaScriptDinamico("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+            await caricaScriptDinamico("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/plugin.min.js");
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const nomeGara = sessionStorage.getItem('selectedEventName') || 'Competizione';
+        const nomeSocEl = document.getElementById('societyNameDisplay') || document.getElementById('nomeSocietaHeader');
+        const nomeSoc = nomeSocEl ? nomeSocEl.innerText : 'Società Sportiva';
+
+        // Intestazione PDF
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.setTextColor(33, 37, 41);
+        doc.text("ELENCO ISCRITTI UFFICIALE", 14, 18);
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(108, 117, 125);
+        doc.text(`Evento: ${nomeGara}`, 14, 25);
+        doc.text(`${nomeSoc}`, 14, 31);
+        doc.text(`Data stampa: ${new Date().toLocaleDateString('it-IT')}`, 14, 37);
+
+        let currentY = 44;
+
+        // 1. Atleti Individuali
+        const { data: atleti } = await sb.from('atleti')
+            .select('*')
+            .eq('event_id', idGaraCorrente)
+            .eq('society_id', idSocietaCorrente)
+            .order('last_name', { ascending: true });
+
+        if (atleti && atleti.length > 0) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.setTextColor(13, 110, 253);
+            doc.text(`Atleti Individuali (${atleti.length})`, 14, currentY);
+            currentY += 4;
+
+            const bodyAtleti = atleti.map((a, index) => [
+                index + 1,
+                `${a.last_name} ${a.first_name}`,
+                a.classe || '-',
+                a.gender === 'M' || a.gender === 'Maschio' ? 'M' : 'F',
+                a.specialty || '-',
+                a.belt || '-',
+                a.weight_category || '-'
+            ]);
+
+            doc.autoTable({
+                startY: currentY,
+                head: [['#', 'Atleta', 'Classe', 'Sesso', 'Specialità', 'Cintura', 'Peso']],
+                body: bodyAtleti,
+                theme: 'striped',
+                headStyles: { fillColor: [13, 110, 253] },
+                styles: { fontSize: 8.5, cellPadding: 2.5 },
+                margin: { left: 14, right: 14 }
+            });
+
+            currentY = doc.lastAutoTable.finalY + 10;
+        }
+
+        // 2. Squadre / Team
+        const { data: teams } = await sb.from('teams')
+            .select('*')
+            .eq('event_id', idGaraCorrente)
+            .eq('society_id', idSocietaCorrente)
+            .order('id', { ascending: true });
+
+        if (teams && teams.length > 0) {
+            if (currentY > 240) {
+                doc.addPage();
+                currentY = 20;
+            }
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.setTextColor(25, 135, 84);
+            doc.text(`Squadre / Team (${teams.length})`, 14, currentY);
+            currentY += 4;
+
+            const bodyTeams = teams.map((t, index) => {
+                const membri = Array.isArray(t.members) ? t.members.join(', ') : (t.members || '-');
+                return [
+                    index + 1,
+                    t.name,
+                    membri,
+                    t.classe || '-',
+                    t.gender || '-',
+                    t.belt || '-'
+                ];
+            });
+
+            doc.autoTable({
+                startY: currentY,
+                head: [['#', 'Nome Team', 'Componenti', 'Classe', 'Sesso/Tipo', 'Cintura']],
+                body: bodyTeams,
+                theme: 'striped',
+                headStyles: { fillColor: [25, 135, 84] },
+                styles: { fontSize: 8.5, cellPadding: 2.5 },
+                margin: { left: 14, right: 14 }
+            });
+        }
+
+        // Download del PDF generato
+        const nomeFilePulito = nomeGara.replace(/[^a-zA-Z0-9]/g, '_');
+        doc.save(`Iscrizioni_${nomeFilePulito}.pdf`);
+
+    } catch (err) {
+        console.error("Errore generazione PDF:", err);
+        alert("Errore durante la generazione del PDF: " + err.message);
+    } finally {
+        if (btn) btn.innerHTML = originalText;
+    }
+};
+
+function caricaScriptDinamico(url) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${url}"]`)) {
+            resolve();
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = url;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
 // --- 7. DISPATCHER AUTOMATICO ---
 document.addEventListener('DOMContentLoaded', () => {
     const formLogin = document.getElementById('loginForm');
@@ -588,7 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formLogin.addEventListener('submit', (e) => { e.preventDefault(); signIn(document.getElementById('email').value, document.getElementById('password').value); });
     }
     if (formRegSoc) {
-        formRegSoc.addEventListener('submit', (e) => { e.preventDefault(); signUp(document.getElementById('email').value, document.getElementById('password').value, document.getElementById('nomeSocieta').value, document.getElementById('cfs').value, document.getElementById('cell').value); });
+        formRegSoc.addEventListener('submit', (e) => { e.preventDefault(); signUp(document.getElementById('email'].value, document.getElementById('password').value, document.getElementById('nomeSocieta').value, document.getElementById('cfs').value, document.getElementById('cell').value); });
     }
     if (containerScelta) {
         caricaListaEventi();
