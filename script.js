@@ -111,7 +111,7 @@ window.selezionaEvento = function(id, htmlDest, sportId, nome) {
     window.location.href = htmlDest;
 };
 
-// --- 3. LOGICA DASHBOARD (Judo / Fitarco) ---
+// --- 3. LOGICA DASHBOARD (Judo / Fitarco / Karate) ---
 async function initDashboardSemplice() {
     idGaraCorrente = sessionStorage.getItem('selectedEventId');
     const nomeGara = sessionStorage.getItem('selectedEventName');
@@ -577,18 +577,17 @@ window.eliminaSquadra = async function(idTeam) {
     } catch (err) { alert("Errore di eliminazione: " + err.message); }
 };
 
-// --- 6C. ESPORTAZIONE PDF ISCRITTI SOCIETÀ ---
+// --- 6C. ESPORTAZIONE PDF ISCRITTI SOCIETÀ (ESPOSTO SU WINDOW) ---
 window.esportaPDFIscrizioni = async function() {
     if (!idGaraCorrente || !idSocietaCorrente) {
         return alert("Dati di sessione non disponibili per l'esportazione.");
     }
 
-    const btn = event?.target?.closest('button') || document.getElementById('btnExportPdf');
+    const btn = document.getElementById('btnExportPdf');
     const originalText = btn ? btn.innerHTML : '';
     if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Generazione PDF...';
 
     try {
-        // Carica dinamicamente jsPDF e AutoTable se non presenti
         if (!window.jspdf) {
             await caricaScriptDinamico("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
             await caricaScriptDinamico("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/plugin.min.js");
@@ -598,10 +597,9 @@ window.esportaPDFIscrizioni = async function() {
         const doc = new jsPDF();
 
         const nomeGara = sessionStorage.getItem('selectedEventName') || 'Competizione';
-        const nomeSocEl = document.getElementById('societyNameDisplay') || document.getElementById('nomeSocietaHeader');
+        const nomeSocEl = document.getElementById('societyNameDisplay') || document.getElementById('nomeSocietaHeader') || document.getElementById('nomeSocieta');
         const nomeSoc = nomeSocEl ? nomeSocEl.innerText : 'Società Sportiva';
 
-        // Intestazione PDF
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
         doc.setTextColor(33, 37, 41);
@@ -616,7 +614,6 @@ window.esportaPDFIscrizioni = async function() {
 
         let currentY = 44;
 
-        // 1. Atleti Individuali
         const { data: atleti } = await sb.from('atleti')
             .select('*')
             .eq('event_id', idGaraCorrente)
@@ -653,7 +650,6 @@ window.esportaPDFIscrizioni = async function() {
             currentY = doc.lastAutoTable.finalY + 10;
         }
 
-        // 2. Squadre / Team
         const { data: teams } = await sb.from('teams')
             .select('*')
             .eq('event_id', idGaraCorrente)
@@ -695,7 +691,6 @@ window.esportaPDFIscrizioni = async function() {
             });
         }
 
-        // Download del PDF generato
         const nomeFilePulito = nomeGara.replace(/[^a-zA-Z0-9]/g, '_');
         doc.save(`Iscrizioni_${nomeFilePulito}.pdf`);
 
