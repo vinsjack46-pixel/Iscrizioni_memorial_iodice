@@ -105,6 +105,13 @@ function toggleRegMode() {
     memberInputs.forEach(input => {
         input.required = isTeam;
     });
+
+    // Ricarica le specialità in base alla modalità corrente (Individuale o Squadra)
+    if (isTeam) {
+        handleTeamYearChange();
+    } else {
+        handleBirthdateChange();
+    }
 }
 
 window.addMemberField = function(val = "") {
@@ -134,7 +141,18 @@ function updateSpecs(year) {
 
     const spSel = document.getElementById('specialty');
     spSel.innerHTML = '<option value="">-- Specialità --</option>';
-    if (classe) classe.specialita.forEach(s => spSel.innerHTML += `<option value="${s}">${s}</option>`);
+    
+    if (classe && classe.specialita) {
+        // Verifica se si tratta di un'iscrizione di squadra
+        const isTeam = document.querySelector('input[name="regType"]:checked')?.value === 'team';
+
+        classe.specialita.forEach(s => {
+            // Se è una squadra, mostra solo le specialità che contengono "Kata"
+            if (!isTeam || s.toLowerCase().includes('kata')) {
+                spSel.innerHTML += `<option value="${s}">${s}</option>`;
+            }
+        });
+    }
     
     const beltSel = document.getElementById('belt');
     if (beltSel) {
@@ -174,7 +192,6 @@ function handleSpecialtyChange() {
 }
 
 // --- HELPER DI RICONOSCIMENTO PER LA CATEGORIA KIDS ---
-// Ora calcola come KIDS esclusivamente chi ha le specialità previste
 function checkIsKids(specialty) {
     if (!specialty) return false;
     const spec = specialty.toString().toLowerCase().trim();
@@ -191,7 +208,6 @@ async function fetchAthletes() {
     let counts = { kumite:0, kata:0, para:0, kids:0 };
 
     data?.sort((a,b) => a.last_name.localeCompare(b.last_name)).forEach(a => {
-        // Logica di conteggio per le statistiche (aggiornata in base alla specialità esatta)
         const s = (a.specialty || '').toLowerCase().trim();
         
         if (s === "kumite") {
@@ -335,7 +351,6 @@ window.delT = async (id) => { if(confirm("Eliminare la squadra selezionata?")) {
 async function verificaLimitiDinamici(eventId, specialty) {
     if (!currentSportConfig) return true;
 
-    // Estrazione sicura dei limiti da qualsiasi struttura JSON
     const limiti = currentSportConfig.limiti || currentSportConfig.regole?.limiti;
     if (!limiti) return true;
 
@@ -348,7 +363,6 @@ async function verificaLimitiDinamici(eventId, specialty) {
         const tuttiIscritti = [...(atleti || []), ...(teams || [])];
         const specLower = (specialty || '').toLowerCase().trim();
 
-        // 1. Controllo LIMITE KIDS (basato ESCLUSIVAMENTE sulle specialità)
         const isNuovoKids = checkIsKids(specialty);
         if (limiti.KIDS !== undefined && isNuovoKids) {
             const iscrittiKids = tuttiIscritti.filter(x => checkIsKids(x.specialty)).length;
@@ -358,7 +372,6 @@ async function verificaLimitiDinamici(eventId, specialty) {
             }
         }
 
-        // 2. Controllo LIMITE PARAKARATE
         if (limiti.ParaKarate !== undefined && specLower === 'parakarate') {
             const iscrittiPara = tuttiIscritti.filter(x => (x.specialty || '').toLowerCase().trim() === 'parakarate').length;
             if (iscrittiPara >= Number(limiti.ParaKarate)) {
@@ -367,7 +380,6 @@ async function verificaLimitiDinamici(eventId, specialty) {
             }
         }
 
-        // 3. Controllo LIMITE KATA MAX
         if (limiti.KataMax !== undefined && specLower === 'kata') {
             const iscrittiKata = tuttiIscritti.filter(x => (x.specialty || '').toLowerCase().trim() === 'kata').length;
             if (iscrittiKata >= Number(limiti.KataMax)) {
@@ -376,7 +388,6 @@ async function verificaLimitiDinamici(eventId, specialty) {
             }
         }
 
-        // 4. Controllo SOMMA KATA + KUMITE
         if (limiti.KataKumiteSum !== undefined && (specLower === 'kata' || specLower === 'kumite')) {
             const iscrittiKataKumite = tuttiIscritti.filter(x => {
                 const s = (x.specialty || '').toLowerCase().trim();
@@ -401,7 +412,6 @@ async function addEntity(e) {
     const ev = sessionStorage.getItem('selectedEventId');
     const isTeam = document.querySelector('input[name="regType"]:checked').value === 'team';
 
-    // CONTROLLO LIMITI DINAMICO (Solo in inserimento nuovi atleti/squadre)
     if (!editingAthleteId && !editingTeamId) {
         const puoProcedere = await verificaLimitiDinamici(
             ev, 
