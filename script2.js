@@ -147,8 +147,9 @@ function updateSpecs(year) {
         const isTeam = document.querySelector('input[name="regType"]:checked')?.value === 'team';
 
         classe.specialita.forEach(s => {
-            // Se è una squadra, mostra solo le specialità che contengono "Kata"
-            if (!isTeam || s.toLowerCase().includes('kata')) {
+            const sLower = s.toLowerCase();
+            // Se è una squadra, mostra solo le specialità che contengono "kata" oppure "parakarate"
+            if (!isTeam || sLower.includes('kata') || sLower.includes('parakarate')) {
                 spSel.innerHTML += `<option value="${s}">${s}</option>`;
             }
         });
